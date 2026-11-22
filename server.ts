@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import fs from "fs";
+import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
@@ -62,6 +63,7 @@ function buildTutorSystemInstruction(context: TutorRequestBody["context"]): stri
 
 async function startServer() {
   const app = express();
+  const httpServer = http.createServer(app);
   app.use(express.json({ limit: "1mb" }));
 
   app.get("/api/health", (_req, res) => {
@@ -167,7 +169,11 @@ async function startServer() {
   if (!isProduction) {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        ws: { server: httpServer },
+        allowedHosts: true,
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);
@@ -184,7 +190,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`PhysicsKit server running at http://localhost:${PORT}`);
   });
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlertCircle, Send, Trash2 } from 'lucide-react';
 import { CHAPTERS, SUBJECTS, TOPICS } from '../../content/registry';
 import { MathText } from '../../components/equations/MathText';
+import { isStreamlitRuntime, requestStreamlitTutor } from '../../utils/streamlitBridge';
 
 interface ChatMessage {
   id: string;
@@ -56,20 +57,39 @@ export function TutorPage({ initialTopic }: TutorPageProps) {
     setLoading(true);
 
     try {
+      const payload = {
+        message: trimmed,
+        history: messages.map((m) => ({ role: m.role, text: m.text })),
+        context: {
+          subject: selectedSubject,
+          chapter: selectedChapter,
+          topic: selectedTopic,
+          level,
+          hintFirst,
+        },
+      };
+
+      if (isStreamlitRuntime()) {
+        const data = await requestStreamlitTutor(payload);
+        if (!data.reply) {
+          setErrorMsg(data.error || 'Could not reach the AI Physics Tutor. Please try again.');
+          return;
+        }
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `m-${Date.now()}`,
+            role: 'model',
+            text: data.reply!,
+          },
+        ]);
+        return;
+      }
+
       const res = await fetch('/api/tutor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: trimmed,
-          history: messages.map((m) => ({ role: m.role, text: m.text })),
-          context: {
-            subject: selectedSubject,
-            chapter: selectedChapter,
-            topic: selectedTopic,
-            level,
-            hintFirst,
-          },
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = (await res.json()) as { reply?: string; error?: string };
