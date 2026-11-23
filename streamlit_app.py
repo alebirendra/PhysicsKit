@@ -178,23 +178,39 @@ def _handle_tutor_request(payload: dict[str, Any]) -> dict[str, Any]:
         }
 
 
-@st.cache_resource(show_spinner="Building PhysicsKit interactive frontend...")
+@st.cache_resource(show_spinner="Loading PhysicsKit interactive frontend...")
 def get_physicskit_component():
     index_file = DIST_DIR / "index.html"
     if not index_file.exists():
         npm_bin = shutil.which("npm")
         if not npm_bin:
             raise RuntimeError(
-                "Prebuilt dist/index.html was not found and npm is not installed. "
-                "Ensure packages.txt includes nodejs and npm, or run `npm run build` first."
+                "Prebuilt dist/index.html was not found in the repository. "
+                "Run `npm install && npm run build` locally and commit the `dist/` directory before deploying to Streamlit Cloud."
             )
-        if not (BASE_DIR / "node_modules").exists():
+        try:
+            if not (BASE_DIR / "node_modules").exists():
+                subprocess.run(
+                    [npm_bin, "install", "--no-audit", "--no-fund"],
+                    cwd=BASE_DIR,
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
             subprocess.run(
-                [npm_bin, "install", "--no-audit", "--no-fund"],
+                [npm_bin, "run", "build"],
                 cwd=BASE_DIR,
                 check=True,
+                capture_output=True,
+                text=True,
             )
-        subprocess.run([npm_bin, "run", "build"], cwd=BASE_DIR, check=True)
+        except subprocess.CalledProcessError as exc:
+            detail = (exc.stderr or exc.stdout or str(exc)).strip()
+            raise RuntimeError(
+                "Prebuilt dist/index.html was not found and automatic `npm` build failed. "
+                "Build locally with `npm run build` and commit `dist/` to your repository.\n\n"
+                f"Details: {detail[:500]}"
+            ) from exc
 
     return components.declare_component("physicskit", path=str(DIST_DIR))
 
@@ -204,7 +220,7 @@ def main() -> None:
         physicskit_ui = get_physicskit_component()
     except Exception as exc:
         st.error(f"Could not initialize PhysicsKit frontend: {exc}")
-        st.info("Run `npm install && npm run build` locally or verify `packages.txt` includes `nodejs` and `npm` on Streamlit Cloud.")
+        st.info("Run `npm run build` locally and ensure the `dist/` folder is committed to your repository.")
         st.stop()
 
     if "last_tutor_request_id" not in st.session_state:
