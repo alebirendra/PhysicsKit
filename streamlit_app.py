@@ -179,49 +179,163 @@ def _handle_tutor_request(payload: dict[str, Any]) -> dict[str, Any]:
         }
 
 
+TMP_ROOT = Path("/tmp")
+TMP_NODE_DIR = TMP_ROOT / "physicskit_node"
+TMP_BUILD_DIR = TMP_ROOT / "physicskit_build"
+TMP_DIST_DIR = TMP_BUILD_DIR / "dist"
+NODE_VERSION = "v22.14.0"
+
+
 def _resolve_frontend_dir() -> Path | None:
-    for candidate in (DIST_DIR, STREAMLIT_STATIC_DIR):
+    for candidate in (DIST_DIR, STREAMLIT_STATIC_DIR, TMP_DIST_DIR):
         if (candidate / "index.html").exists():
             return candidate
     return None
 
 
-@st.cache_resource(show_spinner="Loading PhysicsKit interactive frontend...")
+def _get_node_major(node_bin: str) -> int:
+    try:
+        out = subprocess.check_output([node_bin, "-v"], text=True, timeout=5).strip()
+        return int(out.lstrip("v").split(".")[0])
+    except Exception:
+        return 0
+
+
+def _ensure_node_and_npm() -> tuple[str, str]:
+    sys_node = shutil.which("node")
+    sys_npm = shutil.which("npm")
+    if sys_node and sys_npm and _get_node_major(sys_node) >= 20:
+        return sys_node, sys_npm
+
+    import platform
+    import tarfile
+    import urllib.request
+
+    machine = platform.machine().lower()
+    if machine in ("x86_64", "amd64"):
+        arch = "x64"
+    elif machine in ("aarch64", "arm64"):
+        arch = "arm64"
+    else:
+        raise RuntimeError(f"Unsupported architecture for automatic Node.js setup: {machine}")
+
+    extracted_dir = TMP_NODE_DIR / f"node-{NODE_VERSION}-linux-{arch}"
+    node_bin = extracted_dir / "bin" / "node"
+    npm_bin = extracted_dir / "bin" / "npm"
+    if node_bin.exists() and npm_bin.exists():
+        return str(node_bin), str(npm_bin)
+
+    TMP_NODE_DIR.mkdir(parents=True, exist_ok=True)
+    tarball_name = f"node-{NODE_VERSION}-linux-{arch}.tar.gz"
+    tarball_path = TMP_NODE_DIR / tarball_name
+    url = f"https://nodejs.org/dist/{NODE_VERSION}/{tarball_name}"
+
+    urllib.request.urlretrieve(url, tarball_path)
+    try:
+        with tarfile.open(tarball_path, "r:gz") as tf:
+            tf.extractall(TMP_NODE_DIR)
+    finally:
+        if tarball_path.exists():
+            tarball_path.unlink()
+
+    if not node_bin.exists() or not npm_bin.exists():
+        raise RuntimeError("Downloaded Node.js archive did not contain node/npm binaries.")
+    return str(node_bin), str(npm_bin)
+
+
+def _build_frontend_in_tmp() -> Path:
+    import json
+
+    node_bin, npm_bin = _ensure_node_and_npm()
+    node_dir = str(Path(node_bin).parent)
+
+    if TMP_BUILD_DIR.exists():
+        shutil.rmtree(TMP_BUILD_DIR, ignore_errors=True)
+    TMP_BUILD_DIR.mkdir(parents=True, exist_ok=True)
+
+    for rel in ("index.html", "vite.config.ts", "tsconfig.json"):
+        src_file = BASE_DIR / rel
+        if src_file.exists():
+            shutil.copy2(src_file, TMP_BUILD_DIR / rel)
+
+    src_dir = BASE_DIR / "src"
+    if not src_dir.exists():
+        raise RuntimeError("Missing `src/` directory; cannot build PhysicsKit frontend.")
+    shutil.copytree(src_dir, TMP_BUILD_DIR / "src")
+
+    # Build a lean frontend-only package.json in /tmp so server-only deps aren't installed on Streamlit Cloud.
+    source_pkg: dict[str, Any] = {}
+    pkg_file = BASE_DIR / "package.json"
+    if pkg_file.exists():
+        source_pkg = json.loads(pkg_file.read_text(encoding="utf-8"))
+    src_deps = {**source_pkg.get("dependencies", {}), **source_pkg.get("devDependencies", {})}
+
+    frontend_deps = {
+        name: src_deps[name]
+        for name in (
+            "react",
+            "react-dom",
+            "lucide-react",
+            "three",
+            "katex",
+            "vite",
+            "@vitejs/plugin-react",
+            "@tailwindcss/vite",
+            "tailwindcss",
+            "@types/react",
+            "@types/react-dom",
+            "@types/three",
+            "@types/katex",
+        )
+        if name in src_deps
+    }
+    lean_pkg = {
+        "name": "physicskit-frontend",
+        "private": True,
+        "type": "module",
+        "dependencies": frontend_deps,
+    }
+    (TMP_BUILD_DIR / "package.json").write_text(json.dumps(lean_pkg, indent=2), encoding="utf-8")
+
+    env = os.environ.copy()
+    env["PATH"] = f"{node_dir}{os.pathsep}{env.get('PATH', '')}"
+    env["HOME"] = str(TMP_ROOT / "physicskit_home")
+    env["npm_config_cache"] = str(TMP_ROOT / "physicskit_npm_cache")
+    Path(env["HOME"]).mkdir(parents=True, exist_ok=True)
+    Path(env["npm_config_cache"]).mkdir(parents=True, exist_ok=True)
+
+    try:
+        subprocess.run(
+            [npm_bin, "install", "--no-audit", "--no-fund"],
+            cwd=TMP_BUILD_DIR,
+            env=env,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        vite_cli = TMP_BUILD_DIR / "node_modules" / "vite" / "bin" / "vite.js"
+        subprocess.run(
+            [node_bin, str(vite_cli), "build"],
+            cwd=TMP_BUILD_DIR,
+            env=env,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        detail = (exc.stderr or exc.stdout or str(exc)).strip()
+        raise RuntimeError(f"Frontend build failed on Streamlit runtime:\n{detail[:800]}") from exc
+
+    if not (TMP_DIST_DIR / "index.html").exists():
+        raise RuntimeError("Vite build finished without creating dist/index.html.")
+    return TMP_DIST_DIR
+
+
+@st.cache_resource(show_spinner="Preparing PhysicsKit interactive frontend (first launch may take ~30s)...")
 def get_physicskit_component():
     frontend_dir = _resolve_frontend_dir()
     if frontend_dir is None:
-        npm_bin = shutil.which("npm")
-        if not npm_bin:
-            raise RuntimeError(
-                "Prebuilt frontend bundle (streamlit_static/index.html or dist/index.html) was not found. "
-                "Run `npm run build` locally and commit `streamlit_static/` before deploying to Streamlit Cloud."
-            )
-        try:
-            if not (BASE_DIR / "node_modules").exists():
-                subprocess.run(
-                    [npm_bin, "install", "--no-audit", "--no-fund"],
-                    cwd=BASE_DIR,
-                    check=True,
-                    capture_output=True,
-                    text=True,
-                )
-            subprocess.run(
-                [npm_bin, "run", "build"],
-                cwd=BASE_DIR,
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-        except subprocess.CalledProcessError as exc:
-            detail = (exc.stderr or exc.stdout or str(exc)).strip()
-            raise RuntimeError(
-                "Prebuilt frontend bundle was not found and automatic `npm` build failed. "
-                "Run `npm run build` locally and ensure `streamlit_static/` is committed.\n\n"
-                f"Details: {detail[:500]}"
-            ) from exc
-        frontend_dir = _resolve_frontend_dir()
-        if frontend_dir is None:
-            raise RuntimeError("Build completed but neither dist/index.html nor streamlit_static/index.html was created.")
+        frontend_dir = _build_frontend_in_tmp()
 
     return components.declare_component("physicskit", path=str(frontend_dir))
 
@@ -231,7 +345,6 @@ def main() -> None:
         physicskit_ui = get_physicskit_component()
     except Exception as exc:
         st.error(f"Could not initialize PhysicsKit frontend: {exc}")
-        st.info("Run `npm run build` locally so `streamlit_static/` is generated and committed to your repository.")
         st.stop()
 
     if "last_tutor_request_id" not in st.session_state:

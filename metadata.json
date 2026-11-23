@@ -2,5 +2,7 @@
   "name": "PhysicsKit",
   "description": "Understand Physics. See It. Explore It. An interactive physics learning and simulation platform featuring real-time 2D/3D vector labs, conceptual lessons, practice quizzes, and an AI physics tutor.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

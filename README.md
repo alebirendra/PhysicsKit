@@ -90,13 +90,13 @@ PhysicsKit is an interactive physics learning and simulation platform built for 
 
 PhysicsKit includes everything required to deploy directly to **Streamlit Community Cloud** (`share.streamlit.io`):
 
-- `streamlit_app.py` — Serves the prebuilt React/Vite bundle (`streamlit_static/` or `dist/`) via `st.components.v1.declare_component` and handles AI Physics Tutor queries securely in Python.
-- `streamlit_static/` — Prebuilt frontend assets synced automatically by `npm run build` so Streamlit Cloud deploys without needing Node.js/npm at runtime. *(If you modify `src/`, run `npm run build` before pushing.)*
+- `streamlit_app.py` — Serves the prebuilt React/Vite bundle (`dist/` or `streamlit_static/`) via `st.components.v1.declare_component`, or automatically provisions Node.js 22 LTS and builds the frontend in `/tmp` on first launch if no prebuilt bundle is present. Also handles AI Physics Tutor queries securely in Python.
+- `streamlit_static/` — Prebuilt frontend assets synced automatically by `npm run build` for instant startup when committed.
 - `requirements.txt` — Installs `streamlit` and `google-genai`.
 - `.streamlit/config.toml` — Applies PhysicsKit's light scientific theme and headless server defaults.
 
 ### Deployment Steps
-1. Push this repository (including `streamlit_static/`) to GitHub.
+1. Push this repository to GitHub.
 2. Go to [share.streamlit.io](https://share.streamlit.io/) and click **New app**.
 3. Select your repository, branch, and set **Main file path** to:
    ```text
@@ -107,7 +107,7 @@ PhysicsKit includes everything required to deploy directly to **Streamlit Commun
    GEMINI_API_KEY = "your-actual-gemini-api-key"
    GEMINI_MODEL = "gemini-2.5-flash"
    ```
-5. Click **Deploy**. Streamlit Cloud installs `requirements.txt` and serves PhysicsKit directly from `streamlit_static/`.
+5. Click **Deploy**. Streamlit Cloud installs `requirements.txt` and launches PhysicsKit automatically.
 
 ### Testing Streamlit Locally
 ```bash
