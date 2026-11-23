@@ -9,6 +9,7 @@ import streamlit.components.v1 as components
 
 BASE_DIR = Path(__file__).resolve().parent
 DIST_DIR = BASE_DIR / "dist"
+STREAMLIT_STATIC_DIR = BASE_DIR / "streamlit_static"
 
 st.set_page_config(
     page_title="PhysicsKit — Understand Physics. See It. Explore It.",
@@ -178,15 +179,22 @@ def _handle_tutor_request(payload: dict[str, Any]) -> dict[str, Any]:
         }
 
 
+def _resolve_frontend_dir() -> Path | None:
+    for candidate in (DIST_DIR, STREAMLIT_STATIC_DIR):
+        if (candidate / "index.html").exists():
+            return candidate
+    return None
+
+
 @st.cache_resource(show_spinner="Loading PhysicsKit interactive frontend...")
 def get_physicskit_component():
-    index_file = DIST_DIR / "index.html"
-    if not index_file.exists():
+    frontend_dir = _resolve_frontend_dir()
+    if frontend_dir is None:
         npm_bin = shutil.which("npm")
         if not npm_bin:
             raise RuntimeError(
-                "Prebuilt dist/index.html was not found in the repository. "
-                "Run `npm install && npm run build` locally and commit the `dist/` directory before deploying to Streamlit Cloud."
+                "Prebuilt frontend bundle (streamlit_static/index.html or dist/index.html) was not found. "
+                "Run `npm run build` locally and commit `streamlit_static/` before deploying to Streamlit Cloud."
             )
         try:
             if not (BASE_DIR / "node_modules").exists():
@@ -207,12 +215,15 @@ def get_physicskit_component():
         except subprocess.CalledProcessError as exc:
             detail = (exc.stderr or exc.stdout or str(exc)).strip()
             raise RuntimeError(
-                "Prebuilt dist/index.html was not found and automatic `npm` build failed. "
-                "Build locally with `npm run build` and commit `dist/` to your repository.\n\n"
+                "Prebuilt frontend bundle was not found and automatic `npm` build failed. "
+                "Run `npm run build` locally and ensure `streamlit_static/` is committed.\n\n"
                 f"Details: {detail[:500]}"
             ) from exc
+        frontend_dir = _resolve_frontend_dir()
+        if frontend_dir is None:
+            raise RuntimeError("Build completed but neither dist/index.html nor streamlit_static/index.html was created.")
 
-    return components.declare_component("physicskit", path=str(DIST_DIR))
+    return components.declare_component("physicskit", path=str(frontend_dir))
 
 
 def main() -> None:
@@ -220,7 +231,7 @@ def main() -> None:
         physicskit_ui = get_physicskit_component()
     except Exception as exc:
         st.error(f"Could not initialize PhysicsKit frontend: {exc}")
-        st.info("Run `npm run build` locally and ensure the `dist/` folder is committed to your repository.")
+        st.info("Run `npm run build` locally so `streamlit_static/` is generated and committed to your repository.")
         st.stop()
 
     if "last_tutor_request_id" not in st.session_state:
