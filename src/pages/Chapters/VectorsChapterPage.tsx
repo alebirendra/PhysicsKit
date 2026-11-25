@@ -43,6 +43,10 @@ export function VectorsChapterPage({
 }: VectorsChapterPageProps) {
   const chapter = getChapterById(chapterId) ?? getChapterById('vectors')!;
   const topics = getTopicsForChapter(chapter.id);
+  const chapterSims = SIMULATIONS.filter((s) => chapter.simulationIds.includes(s.id));
+  const labName = chapter.id === 'kinematics' ? '1D Kinematics Lab' : 'Vector Lab';
+  const defaultSimId: SimulationId = chapter.simulationIds[0] ?? 'representation';
+
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(initialTopicId ?? null);
   const [checkChoice, setCheckChoice] = useState<number | null>(null);
 
@@ -50,8 +54,11 @@ export function VectorsChapterPage({
     if (initialTopicId) {
       setSelectedTopicId(initialTopicId);
       setCheckChoice(null);
+    } else {
+      setSelectedTopicId(null);
+      setCheckChoice(null);
     }
-  }, [initialTopicId]);
+  }, [chapterId, initialTopicId]);
 
   const activeTopic = selectedTopicId ? topics.find((t) => t.id === selectedTopicId) ?? topics[0] : null;
   const completedCount = topics.filter((t) => completedTopicIds.includes(t.id)).length;
@@ -140,7 +147,8 @@ export function VectorsChapterPage({
                       <Circle className="w-3.5 h-3.5 text-slate-300 shrink-0" aria-hidden="true" />
                     )}
                     <span className="truncate">
-                      {t.order}. {t.title}
+                      {t.sectionNumber ? `${t.sectionNumber} · ` : `${t.order}. `}
+                      {t.title}
                     </span>
                   </button>
                 );
@@ -152,9 +160,12 @@ export function VectorsChapterPage({
           <article className="lg:col-span-9 space-y-6">
             <header className="bg-white border border-slate-200 rounded-xl p-6 space-y-2">
               <div className="text-xs font-semibold text-blue-600">
-                Classical Mechanics · Chapter {chapter.number}: {chapter.title} · Topic {activeTopic.order} of {topics.length}
+                Classical Mechanics · Chapter {chapter.number}: {chapter.title} ·{' '}
+                {activeTopic.sectionNumber ? `Section ${activeTopic.sectionNumber} (${activeTopic.order}/${topics.length})` : `Topic ${activeTopic.order} of ${topics.length}`}
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{activeTopic.title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                {activeTopic.sectionNumber ? `${activeTopic.sectionNumber} ${activeTopic.title}` : activeTopic.title}
+              </h1>
               <p className="text-sm sm:text-base text-slate-600">
                 <MathText text={activeTopic.shortDescription} />
               </p>
@@ -257,7 +268,7 @@ export function VectorsChapterPage({
                   className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors whitespace-nowrap shrink-0"
                 >
                   <FlaskConical className="w-4 h-4" aria-hidden="true" />
-                  <span>Open in Vector Lab</span>
+                  <span>Open in {labName}</span>
                 </button>
               </section>
             )}
@@ -340,11 +351,11 @@ export function VectorsChapterPage({
               ) : (
                 <button
                   type="button"
-                  onClick={() => onNavigate('practice')}
+                  onClick={() => onNavigate('practice', { chapterId: chapter.id })}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-sm font-medium text-white"
                 >
                   <GraduationCap className="w-4 h-4" />
-                  <span>Go to Vectors Practice Quiz</span>
+                  <span>Go to {chapter.title} Practice Quiz</span>
                 </button>
               )}
             </div>
@@ -390,15 +401,15 @@ export function VectorsChapterPage({
               </button>
               <button
                 type="button"
-                onClick={() => onNavigate('simulations', { simId: 'representation' })}
+                onClick={() => onNavigate('simulations', { simId: defaultSimId })}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm font-medium transition-colors"
               >
                 <FlaskConical className="w-4 h-4 text-blue-600" aria-hidden="true" />
-                <span>Open Vector Lab</span>
+                <span>Open {labName}</span>
               </button>
               <button
                 type="button"
-                onClick={() => onNavigate('practice')}
+                onClick={() => onNavigate('practice', { chapterId: chapter.id })}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm font-medium transition-colors"
               >
                 <GraduationCap className="w-4 h-4 text-slate-600" aria-hidden="true" />
@@ -426,11 +437,11 @@ export function VectorsChapterPage({
         </div>
       </div>
 
-      {/* Topic Navigation Grid (All 13 Topics) */}
+      {/* Topic Navigation Grid */}
       <section className="space-y-4">
         <div className="flex items-end justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Topics in Vectors</h2>
+            <h2 className="text-xl font-bold text-slate-900">Topics in {chapter.title}</h2>
             <p className="text-sm text-slate-600 mt-0.5">
               Select any topic to enter the 7-stage interactive Learning Mode.
             </p>
@@ -449,7 +460,9 @@ export function VectorsChapterPage({
               >
                 <div>
                   <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span className="font-mono">Topic {String(topic.order).padStart(2, '0')}</span>
+                    <span className="font-mono">
+                      {topic.sectionNumber ? `Section ${topic.sectionNumber}` : `Topic ${String(topic.order).padStart(2, '0')}`}
+                    </span>
                     <span className={done ? 'text-emerald-600 font-medium' : 'text-slate-400'}>
                       {done ? 'Completed' : 'Open lesson'}
                     </span>
@@ -470,9 +483,9 @@ export function VectorsChapterPage({
 
       {/* Available Simulations */}
       <section className="space-y-4">
-        <h2 className="text-xl font-bold text-slate-900">Available Vector Simulations</h2>
+        <h2 className="text-xl font-bold text-slate-900">Available {chapter.title} Simulations</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {SIMULATIONS.map((sim) => (
+          {chapterSims.map((sim) => (
             <button
               key={sim.id}
               type="button"

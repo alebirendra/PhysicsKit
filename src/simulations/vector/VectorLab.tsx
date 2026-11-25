@@ -1483,7 +1483,7 @@ export function VectorLab({ activeSimId, onChangeSimId, onNavigateTopicTitle }: 
   return (
     <SimulationWorkspace
       config={simConfig}
-      allSimulations={SIMULATIONS}
+      allSimulations={SIMULATIONS.filter((s) => s.chapterId === 'vectors')}
       onSelectSimulation={onChangeSimId}
       onReset={handleReset}
       displayOptions={displayOptions}

@@ -17,7 +17,12 @@ export type SimulationId =
   | 'unit-vectors'
   | 'dot-product'
   | 'cross-product'
-  | 'displacement';
+  | 'displacement'
+  | 'kinematics-motion'
+  | 'kinematics-velocity'
+  | 'kinematics-acceleration'
+  | 'kinematics-constant-accel'
+  | 'kinematics-integrals';
 
 export interface Vector2D {
   x: number;
@@ -103,7 +108,22 @@ export interface TopicDiagramSpec {
     | 'displacement'
     | 'dot-product'
     | 'cross-product'
-    | 'inclined-plane';
+    | 'inclined-plane'
+    | 'kinematics-intro'
+    | 'position-axis'
+    | 'time-interval'
+    | 'displacement-1d'
+    | 'avg-velocity-secant'
+    | 'inst-velocity-tangent'
+    | 'avg-acceleration-secant'
+    | 'inst-acceleration-tangent'
+    | 'constant-accel-trio'
+    | 'area-at-graph'
+    | 'area-vt-graph'
+    | 'indefinite-integral-antiderivative'
+    | 'area-function-ftc'
+    | 'definite-integral-accel'
+    | 'definite-integral-velocity';
   caption: string;
 }
 
@@ -118,6 +138,7 @@ export interface TopicItem {
   id: string;
   chapterId: string;
   order: number;
+  sectionNumber?: string;
   title: string;
   shortDescription: string;
   conceptIntro: string;
@@ -142,7 +163,7 @@ export interface SimulationConfig {
   title: string;
   shortTitle: string;
   summary: string;
-  dimension: '2D' | '3D' | '2D/3D';
+  dimension: '1D' | '2D' | '3D' | '2D/3D';
   learningObjectives: string[];
   relatedTopics: string[];
   keyEquationLatex: string;
@@ -164,15 +185,20 @@ export interface PracticeQuestion {
   difficulty: QuestionDifficulty;
   type: QuestionType;
   prompt: string;
-  diagram?: {
-    kind: 'single-vector' | 'addition-pair' | 'dot-angle' | 'displacement-pair';
-    ax: number;
-    ay: number;
-    bx?: number;
-    by?: number;
-    labelA?: string;
-    labelB?: string;
-  };
+  diagram?:
+    | {
+        kind: 'single-vector' | 'addition-pair' | 'dot-angle' | 'displacement-pair';
+        ax: number;
+        ay: number;
+        bx?: number;
+        by?: number;
+        labelA?: string;
+        labelB?: string;
+      }
+    | {
+        kind: 'kinematics-vt-trapezoid' | 'kinematics-xt-secant' | 'kinematics-at-step';
+        title: string;
+      };
   options?: string[];
   correctOptionIndex?: number;
   numericAnswer?: number;

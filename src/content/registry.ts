@@ -9,6 +9,8 @@ import type {
 } from '../types/physics';
 import { VECTORS_TOPICS } from './subjects/classicalMechanics/vectors/topics';
 import { VECTORS_EXERCISES } from './subjects/classicalMechanics/vectors/exercises';
+import { KINEMATICS_TOPICS } from './subjects/classicalMechanics/kinematics/topics';
+import { KINEMATICS_EXERCISES } from './subjects/classicalMechanics/kinematics/exercises';
 
 export const SUBJECTS: SubjectItem[] = [
   {
@@ -28,7 +30,7 @@ export const SUBJECTS: SubjectItem[] = [
       'gravitation',
       'oscillations',
     ],
-    resourceIds: ['cm-foundations-text', 'vector-lab-suite', 'cm-problem-bank'],
+    resourceIds: ['cm-foundations-text', 'vector-lab-suite', 'kinematics-lab-suite', 'cm-problem-bank'],
     accentColor: '#2563EB',
   },
   {
@@ -101,14 +103,25 @@ export const LEARNING_RESOURCES: LearningResource[] = [
     status: 'available',
   },
   {
+    id: 'kinematics-lab-suite',
+    subjectId: 'classical-mechanics',
+    title: '1D Kinematics & Integral Calculus Lab',
+    authorOrSource: 'PhysicsKit Simulation Engine',
+    type: 'Simulation Suite',
+    description:
+      'Five interactive 1D motion, secant/tangent slope, area-under-curve, and Riemann integration workspaces.',
+    chapterIds: ['kinematics'],
+    status: 'available',
+  },
+  {
     id: 'cm-problem-bank',
     subjectId: 'classical-mechanics',
     title: 'Applied Mechanics Problem Companion',
     authorOrSource: 'PhysicsKit Assessment Bank',
     type: 'Problem Bank',
     description:
-      'Graded conceptual, numerical, and vector-diagram exercises calibrated across Easy, Medium, and Hard difficulty tiers.',
-    chapterIds: ['vectors'],
+      'Graded conceptual, numerical, and diagram exercises calibrated across Easy, Medium, and Hard difficulty tiers.',
+    chapterIds: ['vectors', 'kinematics'],
     status: 'available',
   },
 ];
@@ -200,15 +213,78 @@ export const CHAPTERS: ChapterItem[] = [
     subjectId: 'classical-mechanics',
     resourceId: 'cm-foundations-text',
     number: 2,
-    title: 'Kinematics',
-    summary: 'Position, velocity, acceleration, projectile trajectories, and circular motion.',
+    title: 'One Dimensional Kinematics',
+    summary:
+      'Describe straight-line motion through position, time intervals, displacement, secant/tangent velocity and acceleration, constant-a equations, graph areas, and definite/indefinite integrals.',
     estimatedMinutes: 110,
-    status: 'coming-soon',
-    learningObjectives: [],
-    keyEquations: [],
-    topicIds: [],
-    simulationIds: [],
-    modules: [],
+    status: 'available',
+    learningObjectives: [
+      'Distinguish signed 1D position coordinates, elapsed time intervals, displacement, and total distance traveled.',
+      'Connect average velocity and average acceleration (secant slopes) to instantaneous derivatives (tangent slopes).',
+      'Predict speeding up vs. slowing down from the relative algebraic signs of velocity and acceleration.',
+      'Derive and apply constant-acceleration kinematics via rectangle + triangle areas under a–t and v–t graphs.',
+      'Use indefinite and definite integrals (and Riemann sums) of a(t) and v(t) to recover Δv and Δx for varying acceleration.',
+    ],
+    keyEquations: [
+      {
+        label: 'Displacement & Time Interval',
+        latex: '\\Delta x = x_2 - x_1, \\quad \\Delta t = t_2 - t_1',
+        meaning: 'Signed net position change and elapsed duration between two clock readings.',
+      },
+      {
+        label: 'Average & Instantaneous Velocity',
+        latex: 'v_{\\text{avg}} = \\frac{\\Delta x}{\\Delta t}, \\quad v(t) = \\frac{dx}{dt}',
+        meaning: 'Secant slope across an interval vs. tangent slope at an instant.',
+      },
+      {
+        label: 'Average & Instantaneous Acceleration',
+        latex: 'a_{\\text{avg}} = \\frac{\\Delta v}{\\Delta t}, \\quad a(t) = \\frac{dv}{dt} = \\frac{d^2x}{dt^2}',
+        meaning: 'Rate of change of velocity; governs whether speed grows or diminishes.',
+      },
+      {
+        label: 'Constant Acceleration Kinematics',
+        latex: 'v = v_0 + at, \\quad x = x_0 + v_0t + \\tfrac{1}{2}at^2, \\quad v^2 = v_0^2 + 2a\\Delta x',
+        meaning: 'Exact motion equations when acceleration is uniform in time.',
+      },
+      {
+        label: 'Change of Velocity as Integral',
+        latex: '\\Delta v = v(t_2) - v(t_1) = \\int_{t_1}^{t_2} a(t)\\,dt',
+        meaning: 'Signed area under the acceleration–time curve.',
+      },
+      {
+        label: 'Displacement as Integral',
+        latex: '\\Delta x = x(t_2) - x(t_1) = \\int_{t_1}^{t_2} v(t)\\,dt',
+        meaning: 'Signed area under the velocity–time curve (distinct from total distance ∫|v(t)|dt).',
+      },
+    ],
+    topicIds: KINEMATICS_TOPICS.map((t) => t.id),
+    simulationIds: [
+      'kinematics-motion',
+      'kinematics-velocity',
+      'kinematics-acceleration',
+      'kinematics-constant-accel',
+      'kinematics-integrals',
+    ],
+    modules: [
+      ...KINEMATICS_TOPICS.map((t) => ({
+        id: `mod-${t.id}`,
+        kind: 'lesson' as const,
+        title: `${t.sectionNumber ?? `${t.order}.`} ${t.title}`,
+        refId: t.id,
+      })),
+      {
+        id: 'mod-kin-lab',
+        kind: 'simulation',
+        title: 'Interactive 1D Kinematics Lab',
+        refId: 'kinematics-motion',
+      },
+      {
+        id: 'mod-kin-practice',
+        kind: 'exercise-set',
+        title: '1D Kinematics Practice & Quiz Set',
+        refId: 'kinematics',
+      },
+    ],
   },
   {
     id: 'dynamics',
@@ -483,10 +559,140 @@ export const SIMULATIONS: SimulationConfig[] = [
       explanation: 'Because initial and final positions match ($\\vec{r}_2 = \\vec{r}_1$), $\\Delta\\vec{r} = \\vec{0} = (0, 0)$.',
     },
   },
+  {
+    id: 'kinematics-motion',
+    chapterId: 'kinematics',
+    title: '1D Position, Time Interval & Displacement',
+    shortTitle: '1D Motion',
+    summary: 'Track a moving particle along a straight 1D axis while comparing signed displacement Δx against total path distance d over [t₁, t₂].',
+    dimension: '1D',
+    learningObjectives: [
+      'Interpret signed coordinates x(t₁) and x(t₂) on a directed number line.',
+      'Observe how direction reversals make total distance exceed |Δx|.',
+    ],
+    relatedTopics: ['Introduction', 'Position', 'Time interval', 'Displacement'],
+    keyEquationLatex: '\\begin{aligned} \\Delta x &= x(t_2) - x(t_1) \\\\ d &= \\int_{t_1}^{t_2} |v(t)|\\,dt \\end{aligned}',
+    quickCheck: {
+      prompt: 'When does total distance traveled d strictly exceed |Δx|?',
+      options: [
+        'Whenever initial position x₀ is negative',
+        'Whenever the particle reverses direction inside [t₁, t₂]',
+        'Whenever velocity is constant and positive',
+        'Whenever Δt > 1 s',
+      ],
+      correctIndex: 1,
+      explanation: 'A direction reversal cancels part of the net displacement Δx while adding positively to path distance d.',
+    },
+  },
+  {
+    id: 'kinematics-velocity',
+    chapterId: 'kinematics',
+    title: 'Average vs. Instantaneous Velocity',
+    shortTitle: 'Velocity & Slopes',
+    summary: 'Compare the secant line slope v_avg across [t₁, t₂] against the instantaneous tangent line v(t) = dx/dt as Δt shrinks.',
+    dimension: '1D',
+    learningObjectives: [
+      'Relate average velocity Δx/Δt to the secant chord on an x–t graph.',
+      'Watch the secant slope converge to the tangent slope dx/dt as Δt → 0.',
+    ],
+    relatedTopics: ['Average velocity', 'Instantaneous velocity'],
+    keyEquationLatex: '\\begin{aligned} v_{\\text{avg}} &= \\frac{x(t_2) - x(t_1)}{t_2 - t_1} \\\\ v(t) &= \\frac{dx}{dt} \\end{aligned}',
+    quickCheck: {
+      prompt: 'What happens to the secant line on x(t) as you shrink t₁ and t₂ tightly around instant t?',
+      options: [
+        'Its slope approaches zero',
+        'It becomes vertical',
+        'Its slope converges to the instantaneous velocity v(t) = dx/dt',
+        'It equals the area under x(t)',
+      ],
+      correctIndex: 2,
+      explanation: 'By the limit definition of the derivative, shrinking Δt → 0 turns the secant chord into the tangent line.',
+    },
+  },
+  {
+    id: 'kinematics-acceleration',
+    chapterId: 'kinematics',
+    title: 'Average & Instantaneous Acceleration',
+    shortTitle: 'Acceleration',
+    summary: 'Explore secant a_avg and tangent a(t) = dv/dt on v(t), and see how the signs of v and a determine speeding up vs. slowing down.',
+    dimension: '1D',
+    learningObjectives: [
+      'Distinguish average acceleration Δv/Δt from instantaneous slope dv/dt.',
+      'Identify speeding up (v·a > 0) versus slowing down (v·a < 0).',
+    ],
+    relatedTopics: ['Average acceleration', 'Instantaneous acceleration'],
+    keyEquationLatex: '\\begin{aligned} a_{\\text{avg}} &= \\frac{\\Delta v}{\\Delta t} \\\\ a(t) &= \\frac{dv}{dt} = \\frac{d^2x}{dt^2} \\end{aligned}',
+    quickCheck: {
+      prompt: 'If a particle has v = -6 m/s and a = -2 m/s² at instant t, what is its speed doing?',
+      options: [
+        'Slowing down because a is negative',
+        'Speeding up in the -x direction because v and a share the same sign',
+        'Remaining constant',
+        'Reversing immediately',
+      ],
+      correctIndex: 1,
+      explanation: 'Speed increases whenever v and a point in the same direction (v·a > 0).',
+    },
+  },
+  {
+    id: 'kinematics-constant-accel',
+    chapterId: 'kinematics',
+    title: 'Constant Acceleration & Graph Areas',
+    shortTitle: 'Constant Accel & Areas',
+    summary: 'Inspect synchronized a–t, v–t, and x–t graphs with live shaded areas Δv = aΔt and Δx = v₁Δt + ½a(Δt)².',
+    dimension: '1D',
+    learningObjectives: [
+      'Connect the rectangular area under a(t) to Δv.',
+      'Decompose the trapezoid area under v(t) into a rectangle plus triangle yielding Δx.',
+    ],
+    relatedTopics: ['Constant acceleration', 'Area under the a–t graph', 'Area under the v–t graph'],
+    keyEquationLatex: '\\begin{aligned} \\Delta v &= a\\Delta t \\\\ \\Delta x &= v_1\\Delta t + \\tfrac{1}{2}a(\\Delta t)^2 \\end{aligned}',
+    quickCheck: {
+      prompt: 'In the v–t trapezoid decomposition, what does the triangular upper piece ½a(Δt)² represent?',
+      options: [
+        'Initial velocity',
+        'Additional displacement caused by changing velocity at rate a',
+        'Total acceleration',
+        'Elapsed time',
+      ],
+      correctIndex: 1,
+      explanation: 'The rectangle v₁Δt is displacement at constant initial velocity; the triangle ½a(Δt)² adds the extra displacement from acceleration.',
+    },
+  },
+  {
+    id: 'kinematics-integrals',
+    chapterId: 'kinematics',
+    title: 'Indefinite & Definite Integrals in Kinematics',
+    shortTitle: 'Integrals & Riemann',
+    summary: 'Vary jerk j and Riemann subintervals N to watch midpoint rectangles converge to ∫a(t)dt = Δv and ∫v(t)dt = Δx, alongside antiderivative shifts + C.',
+    dimension: '1D',
+    learningObjectives: [
+      'See how initial condition C selects a single curve from the antiderivative family ∫a(t)dt + C.',
+      'Compare N-bin Riemann midpoint sums against exact definite integrals of a(t) and v(t).',
+    ],
+    relatedTopics: [
+      'Change of velocity as the indefinite integral',
+      'Area as the indefinite integral',
+      'Definite integral of acceleration',
+      'Displacement as the definite integral of velocity',
+    ],
+    keyEquationLatex: '\\begin{aligned} v(t_2) - v(t_1) &= \\int_{t_1}^{t_2} a(t)\\,dt \\\\ x(t_2) - x(t_1) &= \\int_{t_1}^{t_2} v(t)\\,dt \\end{aligned}',
+    quickCheck: {
+      prompt: 'When v(t) crosses zero inside [t₁, t₂], how does ∫v(t)dt differ from ∫|v(t)|dt?',
+      options: [
+        'They are always identical',
+        '∫v(t)dt gives signed net displacement Δx, while ∫|v(t)|dt gives total distance traveled',
+        '∫v(t)dt gives acceleration',
+        '∫|v(t)|dt can be negative',
+      ],
+      correctIndex: 1,
+      explanation: 'Negative velocity lobes subtract in ∫v(t)dt (displacement) but add positively in ∫|v(t)|dt (distance).',
+    },
+  },
 ];
 
-export const TOPICS: TopicItem[] = [...VECTORS_TOPICS];
-export const PRACTICE_QUESTIONS: PracticeQuestion[] = [...VECTORS_EXERCISES];
+export const TOPICS: TopicItem[] = [...VECTORS_TOPICS, ...KINEMATICS_TOPICS];
+export const PRACTICE_QUESTIONS: PracticeQuestion[] = [...VECTORS_EXERCISES, ...KINEMATICS_EXERCISES];
 
 export function getSubjectById(id: string): SubjectItem | undefined {
   return SUBJECTS.find((s) => s.id === id);

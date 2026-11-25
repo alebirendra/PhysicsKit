@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckCircle2, RotateCcw, XCircle } from 'lucide-react';
-import { getQuestionsForChapter } from '../../content/registry';
+import { PRACTICE_QUESTIONS, getChapterById, getQuestionsForChapter } from '../../content/registry';
 import type { QuestionDifficulty } from '../../types/physics';
 import { MathText } from '../../components/equations/MathText';
 import { PracticeDiagramSvg } from '../../components/equations/VectorDiagramSvg';
@@ -13,22 +13,36 @@ interface QuestionSubmission {
 
 interface PracticePageProps {
   initialQuestionId?: string;
+  initialChapterId?: string;
 }
 
-export function PracticePage({ initialQuestionId }: PracticePageProps) {
-  const allQuestions = getQuestionsForChapter('vectors');
+export function PracticePage({ initialQuestionId, initialChapterId }: PracticePageProps) {
+  const [chapterFilter, setChapterFilter] = useState<string>(initialChapterId ?? 'all');
   const [difficultyFilter, setDifficultyFilter] = useState<'All' | QuestionDifficulty>('All');
   const [submissions, setSubmissions] = useState<Record<string, QuestionSubmission>>({});
   const [numericInputs, setNumericInputs] = useState<Record<string, string>>({});
   const [numericErrors, setNumericErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (initialChapterId) {
+      setChapterFilter(initialChapterId);
+    }
+  }, [initialChapterId]);
+
+  const chapterQuestions =
+    chapterFilter === 'all' ? PRACTICE_QUESTIONS : getQuestionsForChapter(chapterFilter);
+
   const visibleQuestions =
     difficultyFilter === 'All'
-      ? allQuestions
-      : allQuestions.filter((q) => q.difficulty === difficultyFilter);
+      ? chapterQuestions
+      : chapterQuestions.filter((q) => q.difficulty === difficultyFilter);
 
-  const attemptedCount = Object.keys(submissions).length;
-  const correctCount = Object.values(submissions).filter((s) => s.isCorrect).length;
+  const activeChapter = chapterFilter !== 'all' ? getChapterById(chapterFilter) : undefined;
+  const chapterQuestionIds = new Set(chapterQuestions.map((q) => q.id));
+  const attemptedCount = Object.keys(submissions).filter((id) => chapterQuestionIds.has(id)).length;
+  const correctCount = Object.entries(submissions).filter(
+    ([id, s]) => chapterQuestionIds.has(id) && s.isCorrect,
+  ).length;
 
   const handleSelectOption = (questionId: string, optionIdx: number, correctIdx: number) => {
     setSubmissions((prev) => ({
@@ -94,10 +108,16 @@ export function PracticePage({ initialQuestionId }: PracticePageProps) {
       {/* Header & Score Summary */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="text-xs font-semibold text-blue-600">Classical Mechanics · Chapter 1</div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Vectors Practice & Quizzes</h1>
+          <div className="text-xs font-semibold text-blue-600">
+            {activeChapter
+              ? `Classical Mechanics · Chapter ${activeChapter.number}`
+              : 'Classical Mechanics · All Available Chapters'}
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+            {activeChapter ? `${activeChapter.title} Practice & Quizzes` : 'Physics Practice & Quizzes'}
+          </h1>
           <p className="text-sm text-slate-600">
-            Test conceptual understanding, vector algebra, numerical accuracy, and diagram interpretation.
+            Test conceptual understanding, mathematical reasoning, numerical accuracy, and diagram interpretation.
           </p>
         </div>
 
@@ -108,7 +128,7 @@ export function PracticePage({ initialQuestionId }: PracticePageProps) {
               data-testid="practice-score"
               className="text-2xl font-mono font-bold text-slate-900 tabular-nums"
             >
-              {correctCount} / {allQuestions.length}
+              {correctCount} / {chapterQuestions.length}
             </div>
             <div className="text-xs text-slate-500 tabular-nums">{attemptedCount} answered</div>
           </div>
@@ -124,23 +144,46 @@ export function PracticePage({ initialQuestionId }: PracticePageProps) {
         </div>
       </div>
 
-      {/* Difficulty Filter Tabs */}
+      {/* Chapter & Difficulty Filter Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-lg" role="group" aria-label="Filter by difficulty">
-          {(['All', 'Easy', 'Medium', 'Hard'] as const).map((level) => (
-            <button
-              key={level}
-              type="button"
-              onClick={() => setDifficultyFilter(level)}
-              className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors whitespace-nowrap ${
-                difficultyFilter === level
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              {level}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-lg" role="group" aria-label="Filter by chapter">
+            {[
+              { id: 'all', label: 'All Chapters' },
+              { id: 'vectors', label: 'Ch. 1 · Vectors' },
+              { id: 'kinematics', label: 'Ch. 2 · 1D Kinematics' },
+            ].map((ch) => (
+              <button
+                key={ch.id}
+                type="button"
+                onClick={() => setChapterFilter(ch.id)}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors whitespace-nowrap ${
+                  chapterFilter === ch.id
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {ch.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-lg" role="group" aria-label="Filter by difficulty">
+            {(['All', 'Easy', 'Medium', 'Hard'] as const).map((level) => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => setDifficultyFilter(level)}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors whitespace-nowrap ${
+                  difficultyFilter === level
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="text-xs text-slate-500 font-mono tabular-nums">

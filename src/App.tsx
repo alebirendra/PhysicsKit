@@ -21,6 +21,7 @@ export default function App() {
   const [topicId, setTopicId] = useState<string | undefined>(undefined);
   const [simId, setSimId] = useState<SimulationId>('representation');
   const [questionId, setQuestionId] = useState<string | undefined>(undefined);
+  const [practiceChapterId, setPracticeChapterId] = useState<string | undefined>(undefined);
   const [tutorTopic, setTutorTopic] = useState<string | undefined>(undefined);
 
   const [completedTopicIds, setCompletedTopicIds] = useState<string[]>(() => {
@@ -76,7 +77,10 @@ export default function App() {
     const c = params.get('chapter');
     const t = params.get('topic');
     if (s) setSimId(s);
-    if (c) setChapterId(c);
+    if (c) {
+      setChapterId(c);
+      setPracticeChapterId(c);
+    }
     if (t) setTopicId(t);
     if (r && validRoutes.includes(r)) setRoute(r);
   }, []);
@@ -98,6 +102,7 @@ export default function App() {
   ) => {
     if (params?.subjectId) setSubjectId(params.subjectId);
     if (params?.chapterId) setChapterId(params.chapterId);
+    setPracticeChapterId(nextRoute === 'practice' ? params?.chapterId ?? 'all' : undefined);
     setTopicId(params?.topicId);
     setQuestionId(params?.questionId);
     if (params?.tutorTopic) setTutorTopic(params.tutorTopic);
@@ -150,7 +155,9 @@ export default function App() {
         />
       )}
       {route === 'resources' && <ResourcesPage onNavigate={handleNavigate} />}
-      {route === 'practice' && <PracticePage initialQuestionId={questionId} />}
+      {route === 'practice' && (
+        <PracticePage initialQuestionId={questionId} initialChapterId={practiceChapterId} />
+      )}
       {route === 'tutor' && <TutorPage initialTopic={tutorTopic} />}
       {route === 'about' && <AboutPage onNavigate={(r) => handleNavigate(r)} />}
     </AppShell>

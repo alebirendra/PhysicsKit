@@ -27,15 +27,25 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
   const heroResults = heroQuery.trim().length > 0 ? searchPhysicsContent(heroQuery, 8) : [];
 
   const vectorsChapter = CHAPTERS.find((c) => c.id === 'vectors');
+  const kinematicsChapter = CHAPTERS.find((c) => c.id === 'kinematics');
   const featuredSims = SIMULATIONS.filter((s) =>
-    ['representation', 'addition', 'resolution', 'cross-product'].includes(s.id),
+    ['representation', 'cross-product', 'kinematics-velocity', 'kinematics-integrals'].includes(s.id),
   );
   const recentSims = recentSimIds
     .map((id) => SIMULATIONS.find((s) => s.id === id))
     .filter((s): s is NonNullable<typeof s> => Boolean(s));
 
+  const vectorsDone = vectorsChapter
+    ? vectorsChapter.topicIds.filter((id) => completedTopicIds.includes(id)).length
+    : 0;
   const progressPct = vectorsChapter
-    ? Math.round((completedTopicIds.length / Math.max(1, TOPICS.length)) * 100)
+    ? Math.round((vectorsDone / Math.max(1, vectorsChapter.topicIds.length)) * 100)
+    : 0;
+  const kinematicsDone = kinematicsChapter
+    ? kinematicsChapter.topicIds.filter((id) => completedTopicIds.includes(id)).length
+    : 0;
+  const kinProgressPct = kinematicsChapter
+    ? Math.round((kinematicsDone / Math.max(1, kinematicsChapter.topicIds.length)) * 100)
     : 0;
 
   const handleSelectSearch = (item: SearchResultItem) => {
@@ -55,7 +65,7 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
             Learn physics by manipulating live geometry and equations.
           </h1>
           <p className="text-base text-slate-600 leading-relaxed max-w-2xl">
-            PhysicsKit pairs clear conceptual lessons with real-time 2D and 3D simulations, step-by-step derivations, interactive quizzes, and an AI physics tutor—beginning with Classical Mechanics and Vectors.
+            PhysicsKit pairs clear conceptual lessons with real-time 1D, 2D, and 3D simulations, step-by-step derivations, interactive quizzes, and an AI physics tutor across Vectors and One Dimensional Kinematics.
           </p>
 
           {/* Hero Search Bar */}
@@ -80,7 +90,7 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
               <div className="absolute left-0 right-0 top-14 bg-white border border-slate-200 rounded-xl shadow-lg z-20 max-h-80 overflow-y-auto divide-y divide-slate-100">
                 {heroResults.length === 0 ? (
                   <div className="p-4 text-sm text-slate-500">
-                    No matches for “{heroQuery}”. Try “vectors”, “dot product”, or “cross product”.
+                    No matches for “{heroQuery}”. Try “vectors”, “definite integral”, or “instantaneous velocity”.
                   </div>
                 ) : (
                   heroResults.map((res) => (
@@ -108,73 +118,74 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
               onClick={() => onNavigate('chapter', { chapterId: 'vectors' })}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors whitespace-nowrap"
             >
-              <span>Explore Chapter: Vectors</span>
+              <span>Explore Chapter 1: Vectors</span>
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
             <button
               type="button"
-              onClick={() => onNavigate('simulations', { simId: 'representation' })}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm font-medium transition-colors whitespace-nowrap"
+              onClick={() => onNavigate('chapter', { chapterId: 'kinematics' })}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm font-semibold transition-colors whitespace-nowrap"
             >
-              <span>Open Vector Lab</span>
+              <span>Ch. 2: 1D Kinematics</span>
+              <ArrowRight className="w-4 h-4 text-blue-600" aria-hidden="true" />
             </button>
           </div>
         </div>
 
-        {/* Featured First Chapter Card (Classical Mechanics -> Vectors) */}
-        {vectorsChapter && (
-          <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
-            <div className="space-y-4">
+        {/* Active Chapters Card Stack (Classical Mechanics -> Ch. 1 & Ch. 2) */}
+        <div className="lg:col-span-5 space-y-4">
+          {vectorsChapter && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-sm space-y-4">
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <span>Classical Mechanics · Chapter {vectorsChapter.number}</span>
                 <span className="font-mono tabular-nums">{progressPct}% complete</span>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">{vectorsChapter.title}</h2>
-                <p className="text-sm text-slate-600 mt-2 leading-relaxed">{vectorsChapter.summary}</p>
+                <h2 className="text-xl font-bold text-slate-900">{vectorsChapter.title}</h2>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed line-clamp-2">{vectorsChapter.summary}</p>
               </div>
-
-              <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                <div
-                  className="h-full bg-blue-600 transition-all duration-300"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-100 text-xs">
-                <div>
-                  <div className="text-slate-500">Topics</div>
-                  <div className="font-mono font-bold text-base text-slate-900 tabular-nums mt-0.5">
-                    {vectorsChapter.topicIds.length}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Simulations</div>
-                  <div className="font-mono font-bold text-base text-slate-900 tabular-nums mt-0.5">
-                    {vectorsChapter.simulationIds.length}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Est. Time</div>
-                  <div className="font-mono font-bold text-base text-slate-900 tabular-nums mt-0.5">
-                    {vectorsChapter.estimatedMinutes}m
-                  </div>
-                </div>
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 text-xs">
+                <span className="font-mono text-slate-600">
+                  {vectorsChapter.topicIds.length} topics · {vectorsChapter.simulationIds.length} labs · {vectorsChapter.estimatedMinutes}m
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('chapter', { chapterId: 'vectors' })}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors shrink-0"
+                >
+                  <span>Explore Chapter</span>
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
               </div>
             </div>
+          )}
 
-            <div className="pt-5 mt-5 border-t border-slate-100 flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => onNavigate('chapter', { chapterId: 'vectors' })}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition-colors"
-              >
-                <span>Explore Chapter</span>
-                <ArrowRight className="w-4 h-4" aria-hidden="true" />
-              </button>
+          {kinematicsChapter && (
+            <div className="bg-white border border-blue-200 rounded-2xl p-5 flex flex-col justify-between shadow-sm space-y-4">
+              <div className="flex items-center justify-between text-xs text-blue-700 font-medium">
+                <span>Classical Mechanics · Chapter {kinematicsChapter.number}</span>
+                <span className="font-mono tabular-nums text-slate-600">{kinProgressPct}% complete</span>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">{kinematicsChapter.title}</h2>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed line-clamp-2">{kinematicsChapter.summary}</p>
+              </div>
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 text-xs">
+                <span className="font-mono text-slate-600">
+                  {kinematicsChapter.topicIds.length} sections · {kinematicsChapter.simulationIds.length} labs · {kinematicsChapter.estimatedMinutes}m
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('chapter', { chapterId: 'kinematics' })}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors shrink-0"
+                >
+                  <span>Explore Chapter 2</span>
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </section>
 
       {/* FEATURED PHYSICS SIMULATIONS */}
@@ -191,7 +202,7 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
             onClick={() => onNavigate('simulations')}
             className="text-sm font-medium text-blue-600 hover:text-blue-700 whitespace-nowrap"
           >
-            View all 8 simulations
+            View all {SIMULATIONS.length} simulations
           </button>
         </div>
 
@@ -205,7 +216,7 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
             >
               <div>
                 <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span>Vector Lab</span>
+                  <span>{sim.chapterId === 'kinematics' ? '1D Kinematics Lab' : 'Vector Lab'}</span>
                   <span className="font-mono text-blue-700 font-medium">{sim.dimension}</span>
                 </div>
                 <h3 className="text-base font-bold text-slate-900 mt-1.5">{sim.title}</h3>

@@ -88,7 +88,7 @@ export function searchPhysicsContent(rawQuery: string, limit = 16): SearchResult
 
   for (const topic of TOPICS) {
     const s = scoreText(
-      `${topic.title} ${topic.shortDescription} ${topic.keywords.join(' ')} ${topic.workedExample.title}`,
+      `${topic.sectionNumber ?? ''} ${topic.title} ${topic.shortDescription} ${topic.keywords.join(' ')} ${topic.workedExample.title}`,
       1.4,
     );
     if (s > 0) {
@@ -97,7 +97,7 @@ export function searchPhysicsContent(rawQuery: string, limit = 16): SearchResult
         item: {
           id: `top-${topic.id}`,
           category: 'Topic',
-          title: topic.title,
+          title: topic.sectionNumber ? `${topic.sectionNumber} ${topic.title}` : topic.title,
           subtitle: `${topic.shortDescription} · Worked Example: ${topic.workedExample.title}`,
           route: 'chapter',
           params: { chapterId: topic.chapterId, topicId: topic.id },
@@ -126,15 +126,16 @@ export function searchPhysicsContent(rawQuery: string, limit = 16): SearchResult
   for (const q of PRACTICE_QUESTIONS) {
     const s = scoreText(`${q.prompt} ${q.topicId} ${q.explanation}`, 0.85);
     if (s > 0) {
+      const chTitle = CHAPTERS.find((c) => c.id === q.chapterId)?.title ?? 'Physics';
       scored.push({
         score: s,
         item: {
           id: `prac-${q.id}`,
           category: 'Practice',
           title: `Practice (${q.difficulty}): ${q.prompt.slice(0, 72)}${q.prompt.length > 72 ? '…' : ''}`,
-          subtitle: `Vectors · ${q.type.replace('-', ' ')}`,
+          subtitle: `${chTitle} · ${q.type.replace('-', ' ')}`,
           route: 'practice',
-          params: { questionId: q.id },
+          params: { questionId: q.id, chapterId: q.chapterId },
         },
       });
     }

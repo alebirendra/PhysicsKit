@@ -64,9 +64,15 @@ export function ResourcesPage({ onNavigate }: ResourcesPageProps) {
               <button
                 type="button"
                 onClick={() => {
-                  if (res.type === 'Simulation Suite') onNavigate('simulations');
-                  else if (res.type === 'Problem Bank') onNavigate('practice');
-                  else onNavigate('chapter', { chapterId: 'vectors' });
+                  if (res.id === 'kinematics-lab-suite') {
+                    onNavigate('simulations', { simId: 'kinematics-motion' });
+                  } else if (res.type === 'Simulation Suite') {
+                    onNavigate('simulations', { simId: 'representation' });
+                  } else if (res.type === 'Problem Bank') {
+                    onNavigate('practice');
+                  } else {
+                    onNavigate('subject', { subjectId: res.subjectId });
+                  }
                 }}
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors"
               >
