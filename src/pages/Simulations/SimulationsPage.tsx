@@ -3,6 +3,7 @@ import { TOPICS, getChapterById, getSimulationById } from '../../content/registr
 import type { AppRoute, SimulationId } from '../../types/physics';
 import { VectorLab } from '../../simulations/vector/VectorLab';
 import { KinematicsLab } from '../../simulations/kinematics/KinematicsLab';
+import { Kinematics2DLab } from '../../simulations/kinematics2d/Kinematics2DLab';
 
 interface SimulationsPageProps {
   activeSimId: SimulationId;
@@ -15,9 +16,19 @@ interface SimulationsPageProps {
 
 export function SimulationsPage({ activeSimId, onChangeSimId, onNavigate }: SimulationsPageProps) {
   const simConfig = getSimulationById(activeSimId);
-  const isKinematics = simConfig?.chapterId === 'kinematics';
-  const activeChapterId = isKinematics ? 'kinematics' : 'vectors';
+  const activeChapterId =
+    simConfig?.chapterId === 'kinematics-2d'
+      ? 'kinematics-2d'
+      : simConfig?.chapterId === 'kinematics'
+        ? 'kinematics'
+        : 'vectors';
   const activeChapter = getChapterById(activeChapterId);
+  const labHeading =
+    activeChapterId === 'kinematics-2d'
+      ? 'Interactive 2D Kinematics Lab'
+      : activeChapterId === 'kinematics'
+        ? 'Interactive 1D Kinematics Lab'
+        : 'Interactive Vector Lab';
 
   const handleNavigateTopicTitle = (topicTitle: string) => {
     const matched = TOPICS.find((t) => t.title.toLowerCase() === topicTitle.toLowerCase());
@@ -35,9 +46,7 @@ export function SimulationsPage({ activeSimId, onChangeSimId, onNavigate }: Simu
           <div className="text-xs font-semibold text-blue-600">
             Classical Mechanics · Chapter {activeChapter?.number ?? 1}: {activeChapter?.title ?? 'Vectors'}
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            {isKinematics ? 'Interactive 1D Kinematics Lab' : 'Interactive Vector Lab'}
-          </h1>
+          <h1 className="text-2xl font-bold text-slate-900">{labHeading}</h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -46,7 +55,7 @@ export function SimulationsPage({ activeSimId, onChangeSimId, onNavigate }: Simu
               type="button"
               onClick={() => onChangeSimId('representation')}
               className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors whitespace-nowrap ${
-                !isKinematics ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                activeChapterId === 'vectors' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Ch. 1 · Vector Lab
@@ -55,10 +64,19 @@ export function SimulationsPage({ activeSimId, onChangeSimId, onNavigate }: Simu
               type="button"
               onClick={() => onChangeSimId('kinematics-motion')}
               className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors whitespace-nowrap ${
-                isKinematics ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                activeChapterId === 'kinematics' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Ch. 2 · 1D Kinematics Lab
+              Ch. 2 · 1D Kinematics
+            </button>
+            <button
+              type="button"
+              onClick={() => onChangeSimId('kinematics2d-projectile')}
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors whitespace-nowrap ${
+                activeChapterId === 'kinematics-2d' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Ch. 3 · 2D Kinematics
             </button>
           </div>
 
@@ -87,7 +105,13 @@ export function SimulationsPage({ activeSimId, onChangeSimId, onNavigate }: Simu
         </div>
       </div>
 
-      {isKinematics ? (
+      {activeChapterId === 'kinematics-2d' ? (
+        <Kinematics2DLab
+          activeSimId={activeSimId}
+          onChangeSimId={onChangeSimId}
+          onNavigateTopicTitle={handleNavigateTopicTitle}
+        />
+      ) : activeChapterId === 'kinematics' ? (
         <KinematicsLab
           activeSimId={activeSimId}
           onChangeSimId={onChangeSimId}

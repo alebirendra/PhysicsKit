@@ -64,7 +64,9 @@ export function ResourcesPage({ onNavigate }: ResourcesPageProps) {
               <button
                 type="button"
                 onClick={() => {
-                  if (res.id === 'kinematics-lab-suite') {
+                  if (res.id === 'kinematics2d-lab-suite') {
+                    onNavigate('simulations', { simId: 'kinematics2d-projectile' });
+                  } else if (res.id === 'kinematics-lab-suite') {
                     onNavigate('simulations', { simId: 'kinematics-motion' });
                   } else if (res.type === 'Simulation Suite') {
                     onNavigate('simulations', { simId: 'representation' });

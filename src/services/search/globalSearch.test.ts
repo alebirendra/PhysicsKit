@@ -34,3 +34,21 @@ test('searching "definite integral" and "2.5.1" finds Chapter 2 kinematics topic
     'should match topic by section number 2.5.1',
   );
 });
+
+test('searching "projectile" and "3.6.1" finds Chapter 3 2D kinematics topics and simulation', () => {
+  const projResults = searchPhysicsContent('projectile');
+  assert.ok(
+    projResults.some((r) => r.category === 'Topic' && r.params?.chapterId === 'kinematics-2d'),
+    'should find Chapter 3 projectile topics',
+  );
+  assert.ok(
+    projResults.some((r) => r.category === 'Simulation' && r.params?.simId === 'kinematics2d-projectile'),
+    'should find kinematics2d-projectile simulation',
+  );
+
+  const secResults = searchPhysicsContent('3.6.1');
+  assert.ok(
+    secResults.some((r) => r.params?.topicId === 'uniform-circular-motion'),
+    'should match topic by section number 3.6.1',
+  );
+});

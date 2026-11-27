@@ -22,7 +22,11 @@ export type SimulationId =
   | 'kinematics-velocity'
   | 'kinematics-acceleration'
   | 'kinematics-constant-accel'
-  | 'kinematics-integrals';
+  | 'kinematics-integrals'
+  | 'kinematics2d-vectors'
+  | 'kinematics2d-projectile'
+  | 'kinematics2d-circular'
+  | 'kinematics2d-relative';
 
 export interface Vector2D {
   x: number;
@@ -123,7 +127,19 @@ export interface TopicDiagramSpec {
     | 'indefinite-integral-antiderivative'
     | 'area-function-ftc'
     | 'definite-integral-accel'
-    | 'definite-integral-velocity';
+    | 'definite-integral-velocity'
+    | 'kin2d-intro'
+    | 'position-2d'
+    | 'displacement-2d'
+    | 'avg-velocity-2d'
+    | 'inst-velocity-2d'
+    | 'acceleration-2d-decomp'
+    | 'projectile-axes'
+    | 'projectile-parabola'
+    | 'projectile-range-height'
+    | 'circular-uniform'
+    | 'circular-nonuniform'
+    | 'relative-velocity-2d';
   caption: string;
 }
 
@@ -196,7 +212,13 @@ export interface PracticeQuestion {
         labelB?: string;
       }
     | {
-        kind: 'kinematics-vt-trapezoid' | 'kinematics-xt-secant' | 'kinematics-at-step';
+        kind:
+          | 'kinematics-vt-trapezoid'
+          | 'kinematics-xt-secant'
+          | 'kinematics-at-step'
+          | 'kin2d-projectile-flight'
+          | 'kin2d-circular-accel'
+          | 'kin2d-river-boat';
         title: string;
       };
   options?: string[];

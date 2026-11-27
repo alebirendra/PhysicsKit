@@ -28,8 +28,9 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
 
   const vectorsChapter = CHAPTERS.find((c) => c.id === 'vectors');
   const kinematicsChapter = CHAPTERS.find((c) => c.id === 'kinematics');
+  const kinematics2dChapter = CHAPTERS.find((c) => c.id === 'kinematics-2d');
   const featuredSims = SIMULATIONS.filter((s) =>
-    ['representation', 'cross-product', 'kinematics-velocity', 'kinematics-integrals'].includes(s.id),
+    ['representation', 'kinematics-velocity', 'kinematics2d-projectile', 'kinematics2d-circular'].includes(s.id),
   );
   const recentSims = recentSimIds
     .map((id) => SIMULATIONS.find((s) => s.id === id))
@@ -46,6 +47,12 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
     : 0;
   const kinProgressPct = kinematicsChapter
     ? Math.round((kinematicsDone / Math.max(1, kinematicsChapter.topicIds.length)) * 100)
+    : 0;
+  const kinematics2dDone = kinematics2dChapter
+    ? kinematics2dChapter.topicIds.filter((id) => completedTopicIds.includes(id)).length
+    : 0;
+  const kin2dProgressPct = kinematics2dChapter
+    ? Math.round((kinematics2dDone / Math.max(1, kinematics2dChapter.topicIds.length)) * 100)
     : 0;
 
   const handleSelectSearch = (item: SearchResultItem) => {
@@ -65,7 +72,7 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
             Learn physics by manipulating live geometry and equations.
           </h1>
           <p className="text-base text-slate-600 leading-relaxed max-w-2xl">
-            PhysicsKit pairs clear conceptual lessons with real-time 1D, 2D, and 3D simulations, step-by-step derivations, interactive quizzes, and an AI physics tutor across Vectors and One Dimensional Kinematics.
+            PhysicsKit pairs clear conceptual lessons with real-time 1D, 2D, and 3D simulations, step-by-step derivations, interactive quizzes, and an AI physics tutor across Vectors, 1D Kinematics, and 2D Kinematics.
           </p>
 
           {/* Hero Search Bar */}
@@ -129,20 +136,28 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
               <span>Ch. 2: 1D Kinematics</span>
               <ArrowRight className="w-4 h-4 text-blue-600" aria-hidden="true" />
             </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('chapter', { chapterId: 'kinematics-2d' })}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-blue-200 bg-blue-50/70 hover:bg-blue-50 text-blue-900 text-sm font-semibold transition-colors whitespace-nowrap"
+            >
+              <span>Ch. 3: 2D Kinematics</span>
+              <ArrowRight className="w-4 h-4 text-blue-600" aria-hidden="true" />
+            </button>
           </div>
         </div>
 
-        {/* Active Chapters Card Stack (Classical Mechanics -> Ch. 1 & Ch. 2) */}
-        <div className="lg:col-span-5 space-y-4">
+        {/* Active Chapters Card Stack (Classical Mechanics -> Ch. 1, Ch. 2 & Ch. 3) */}
+        <div className="lg:col-span-5 space-y-3">
           {vectorsChapter && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-sm space-y-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm space-y-3">
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <span>Classical Mechanics · Chapter {vectorsChapter.number}</span>
                 <span className="font-mono tabular-nums">{progressPct}% complete</span>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900">{vectorsChapter.title}</h2>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed line-clamp-2">{vectorsChapter.summary}</p>
+                <h2 className="text-lg font-bold text-slate-900">{vectorsChapter.title}</h2>
+                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed line-clamp-2">{vectorsChapter.summary}</p>
               </div>
               <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 text-xs">
                 <span className="font-mono text-slate-600">
@@ -151,7 +166,7 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
                 <button
                   type="button"
                   onClick={() => onNavigate('chapter', { chapterId: 'vectors' })}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors shrink-0"
                 >
                   <span>Explore Chapter</span>
                   <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -161,14 +176,14 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
           )}
 
           {kinematicsChapter && (
-            <div className="bg-white border border-blue-200 rounded-2xl p-5 flex flex-col justify-between shadow-sm space-y-4">
-              <div className="flex items-center justify-between text-xs text-blue-700 font-medium">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm space-y-3">
+              <div className="flex items-center justify-between text-xs text-slate-500">
                 <span>Classical Mechanics · Chapter {kinematicsChapter.number}</span>
-                <span className="font-mono tabular-nums text-slate-600">{kinProgressPct}% complete</span>
+                <span className="font-mono tabular-nums">{kinProgressPct}% complete</span>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900">{kinematicsChapter.title}</h2>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed line-clamp-2">{kinematicsChapter.summary}</p>
+                <h2 className="text-lg font-bold text-slate-900">{kinematicsChapter.title}</h2>
+                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed line-clamp-2">{kinematicsChapter.summary}</p>
               </div>
               <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 text-xs">
                 <span className="font-mono text-slate-600">
@@ -177,9 +192,35 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
                 <button
                   type="button"
                   onClick={() => onNavigate('chapter', { chapterId: 'kinematics' })}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors shrink-0"
                 >
                   <span>Explore Chapter 2</span>
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {kinematics2dChapter && (
+            <div className="bg-white border border-blue-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm space-y-3">
+              <div className="flex items-center justify-between text-xs text-blue-700 font-medium">
+                <span>Classical Mechanics · Chapter {kinematics2dChapter.number}</span>
+                <span className="font-mono tabular-nums text-slate-600">{kin2dProgressPct}% complete</span>
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">{kinematics2dChapter.title}</h2>
+                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed line-clamp-2">{kinematics2dChapter.summary}</p>
+              </div>
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 text-xs">
+                <span className="font-mono text-slate-600">
+                  {kinematics2dChapter.topicIds.length} sections · {kinematics2dChapter.simulationIds.length} labs · {kinematics2dChapter.estimatedMinutes}m
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('chapter', { chapterId: 'kinematics-2d' })}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors shrink-0"
+                >
+                  <span>Explore Chapter 3</span>
                   <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
               </div>
@@ -216,7 +257,13 @@ export function HomePage({ recentSimIds, completedTopicIds, onNavigate }: HomePa
             >
               <div>
                 <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span>{sim.chapterId === 'kinematics' ? '1D Kinematics Lab' : 'Vector Lab'}</span>
+                  <span>
+                    {sim.chapterId === 'kinematics-2d'
+                      ? '2D Kinematics Lab'
+                      : sim.chapterId === 'kinematics'
+                        ? '1D Kinematics Lab'
+                        : 'Vector Lab'}
+                  </span>
                   <span className="font-mono text-blue-700 font-medium">{sim.dimension}</span>
                 </div>
                 <h3 className="text-base font-bold text-slate-900 mt-1.5">{sim.title}</h3>

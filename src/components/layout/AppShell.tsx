@@ -148,6 +148,14 @@ export function AppShell({ currentRoute, onNavigate, children }: AppShellProps) 
               <div className="text-[11px] text-slate-500">Classical Mechanics</div>
               <div className="text-sm font-semibold text-slate-900 mt-0.5">Ch. 2 · 1D Kinematics</div>
             </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('chapter', { chapterId: 'kinematics-2d' })}
+              className="w-full text-left p-2.5 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 transition-colors"
+            >
+              <div className="text-[11px] text-slate-500">Classical Mechanics</div>
+              <div className="text-sm font-semibold text-slate-900 mt-0.5">Ch. 3 · 2D Kinematics</div>
+            </button>
           </div>
         )}
       </aside>
@@ -352,6 +360,13 @@ export function AppShell({ currentRoute, onNavigate, children }: AppShellProps) 
               className="hover:text-slate-900 transition-colors"
             >
               Ch. 2 · 1D Kinematics
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('chapter', { chapterId: 'kinematics-2d' })}
+              className="hover:text-slate-900 transition-colors"
+            >
+              Ch. 3 · 2D Kinematics
             </button>
             <button
               type="button"

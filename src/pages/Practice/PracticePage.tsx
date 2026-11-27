@@ -152,6 +152,7 @@ export function PracticePage({ initialQuestionId, initialChapterId }: PracticePa
               { id: 'all', label: 'All Chapters' },
               { id: 'vectors', label: 'Ch. 1 · Vectors' },
               { id: 'kinematics', label: 'Ch. 2 · 1D Kinematics' },
+              { id: 'kinematics-2d', label: 'Ch. 3 · 2D Kinematics' },
             ].map((ch) => (
               <button
                 key={ch.id}

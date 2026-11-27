@@ -71,6 +71,21 @@ const KINEMATICS_DIAGRAM_KINDS = new Set<string>([
   'definite-integral-velocity',
 ]);
 
+const KINEMATICS_2D_DIAGRAM_KINDS = new Set<string>([
+  'kin2d-intro',
+  'position-2d',
+  'displacement-2d',
+  'avg-velocity-2d',
+  'inst-velocity-2d',
+  'acceleration-2d-decomp',
+  'projectile-axes',
+  'projectile-parabola',
+  'projectile-range-height',
+  'circular-uniform',
+  'circular-nonuniform',
+  'relative-velocity-2d',
+]);
+
 function KinematicsTopicSvgContent({ kind, w, h }: { kind: TopicDiagramSpec['kind']; w: number; h: number }) {
   const gx0 = 46;
   const gx1 = w - 24;
@@ -394,12 +409,222 @@ function KinematicsTopicSvgContent({ kind, w, h }: { kind: TopicDiagramSpec['kin
   );
 }
 
+function Kinematics2DTopicSvgContent({ kind, w, h }: { kind: TopicDiagramSpec['kind']; w: number; h: number }) {
+  const ox = 56;
+  const oy = h - 34;
+
+  if (kind === 'kin2d-intro') {
+    return (
+      <>
+        <line x1={ox} y1={oy} x2={w - 24} y2={oy} stroke="#64748B" strokeWidth="1.5" />
+        <line x1={ox} y1={24} x2={ox} y2={oy} stroke="#64748B" strokeWidth="1.5" />
+        <text x={w - 20} y={oy + 4} fontSize="11" fill="#475569">x</text>
+        <text x={ox - 16} y="28" fontSize="11" fill="#475569">y</text>
+        <path d={`M ${ox + 16} ${oy - 14} Q 150 40 290 128`} fill="none" stroke="#2563EB" strokeWidth="2.5" />
+        {/* Point P and axis shadows */}
+        <circle cx="192" cy="79" r="5" fill="#0F172A" />
+        <line x1="192" y1="79" x2="192" y2={oy} stroke="#059669" strokeWidth="1.5" strokeDasharray="4 3" />
+        <line x1="192" y1="79" x2={ox} y2="79" stroke="#D97706" strokeWidth="1.5" strokeDasharray="4 3" />
+        <circle cx="192" cy={oy} r="4" fill="#059669" />
+        <circle cx={ox} cy="79" r="4" fill="#D97706" />
+        <text x="176" y={oy + 16} fontSize="11" fontWeight="700" fill="#059669">x(t)</text>
+        <text x={ox - 30} y="83" fontSize="11" fontWeight="700" fill="#D97706">y(t)</text>
+        <text x="198" y="70" fontSize="11" fontWeight="700" fill="#0F172A">r(t)</text>
+      </>
+    );
+  }
+
+  if (kind === 'position-2d') {
+    return (
+      <>
+        <line x1={ox} y1={oy} x2={w - 24} y2={oy} stroke="#94A3B8" strokeWidth="1.5" />
+        <line x1={ox} y1={22} x2={ox} y2={oy} stroke="#94A3B8" strokeWidth="1.5" />
+        <path d={`M ${ox + 26} ${oy - 16} Q 168 42 296 96`} fill="none" stroke="#94A3B8" strokeWidth="2" strokeDasharray="5 4" />
+        <line x1="216" y1="68" x2="216" y2={oy} stroke="#CBD5E1" strokeWidth="1.5" strokeDasharray="4 3" />
+        <line x1={ox} y1="68" x2="216" y2="68" stroke="#CBD5E1" strokeWidth="1.5" strokeDasharray="4 3" />
+        <SvgArrow x1={ox} y1={oy} x2={212} y2={71} color="#2563EB" strokeWidth={3} id="p2d-r" />
+        <circle cx="216" cy="68" r="5" fill="#2563EB" />
+        <text x="118" y="114" fontSize="12" fontWeight="700" fill="#2563EB">r(t) = x(t)î + y(t)ĵ</text>
+        <text x={ox - 12} y={oy + 14} fontSize="10" fill="#475569">O</text>
+        <text x="200" y={oy + 16} fontSize="10" fontWeight="600" fill="#475569">x(t)</text>
+        <text x={ox - 28} y="72" fontSize="10" fontWeight="600" fill="#475569">y(t)</text>
+      </>
+    );
+  }
+
+  if (kind === 'displacement-2d' || kind === 'avg-velocity-2d') {
+    const p1 = { x: 132, y: 120 };
+    const p2 = { x: 268, y: 66 };
+    return (
+      <>
+        <line x1={ox} y1={oy} x2={w - 22} y2={oy} stroke="#94A3B8" strokeWidth="1.5" />
+        <line x1={ox} y1={22} x2={ox} y2={oy} stroke="#94A3B8" strokeWidth="1.5" />
+        <path d="M 88 152 Q 178 36 302 88" fill="none" stroke="#94A3B8" strokeWidth="2" strokeDasharray="5 4" />
+        <SvgArrow x1={ox} y1={oy} x2={p1.x} y2={p1.y} color="#64748B" strokeWidth={2} id="d2d-r1" />
+        <SvgArrow x1={ox} y1={oy} x2={p2.x} y2={p2.y} color="#2563EB" strokeWidth={2} id="d2d-r2" />
+        <SvgArrow x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} color="#DC2626" strokeWidth={3} id="d2d-dr" />
+        <circle cx={p1.x} cy={p1.y} r="4" fill="#64748B" />
+        <circle cx={p2.x} cy={p2.y} r="4" fill="#2563EB" />
+        <text x="86" y="148" fontSize="10" fontWeight="700" fill="#64748B">r₁</text>
+        <text x="190" y="128" fontSize="10" fontWeight="700" fill="#2563EB">r₂</text>
+        <text x="168" y="84" fontSize="11" fontWeight="700" fill="#DC2626">
+          {kind === 'avg-velocity-2d' ? 'v_avg ∥ Δr' : 'Δr = r₂ − r₁'}
+        </text>
+      </>
+    );
+  }
+
+  if (kind === 'inst-velocity-2d') {
+    const px = 178;
+    const py = 74;
+    return (
+      <>
+        <line x1={ox} y1={oy} x2={w - 22} y2={oy} stroke="#94A3B8" strokeWidth="1.5" />
+        <line x1={ox} y1={22} x2={ox} y2={oy} stroke="#94A3B8" strokeWidth="1.5" />
+        <path d="M 76 158 Q 174 34 302 128" fill="none" stroke="#2563EB" strokeWidth="2.5" />
+        <line x1={px} y1={py} x2="262" y2="108" stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="4 3" />
+        <SvgArrow x1={px} y1={py} x2={260} y2={62} color="#059669" strokeWidth={3} id="iv2d-v" />
+        <circle cx={px} cy={py} r="5" fill="#0F172A" />
+        <text x="234" y="54" fontSize="11" fontWeight="700" fill="#059669">v(t) = dr/dt (tangent)</text>
+        <text x="228" y="124" fontSize="10" fill="#64748B">secants → tangent</text>
+      </>
+    );
+  }
+
+  if (kind === 'acceleration-2d-decomp') {
+    const px = 176;
+    const py = 68;
+    return (
+      <>
+        <path d="M 64 152 Q 174 28 296 124" fill="none" stroke="#2563EB" strokeWidth="2.5" />
+        <circle cx={px} cy={py} r="5" fill="#0F172A" />
+        <SvgArrow x1={px} y1={py} x2={258} y2={66} color="#059669" strokeWidth={2.5} id="ad-v" />
+        <SvgArrow x1={px} y1={py} x2={228} y2={67} color="#D97706" strokeWidth={2.5} id="ad-par" />
+        <SvgArrow x1={px} y1={py} x2={176} y2={138} color="#4F46E5" strokeWidth={2.5} id="ad-perp" />
+        <SvgArrow x1={px} y1={py} x2={228} y2={138} color="#DC2626" strokeWidth={3} id="ad-a" />
+        <line x1="228" y1="67" x2="228" y2="138" stroke="#94A3B8" strokeWidth="1.2" strokeDasharray="3 3" />
+        <line x1="176" y1="138" x2="228" y2="138" stroke="#94A3B8" strokeWidth="1.2" strokeDasharray="3 3" />
+        <text x="262" y="64" fontSize="11" fontWeight="700" fill="#059669">v</text>
+        <text x="210" y="56" fontSize="10" fontWeight="700" fill="#B45309">a_∥</text>
+        <text x="150" y="124" fontSize="10" fontWeight="700" fill="#4F46E5">a_⊥</text>
+        <text x="234" y="144" fontSize="12" fontWeight="700" fill="#DC2626">a = a_∥ + a_⊥</text>
+      </>
+    );
+  }
+
+  if (kind === 'projectile-axes') {
+    const gy = h - 32;
+    return (
+      <>
+        <line x1="28" y1={gy} x2={w - 22} y2={gy} stroke="#475569" strokeWidth="2" />
+        <path d={`M 48 ${gy} Q 180 18 312 ${gy}`} fill="none" stroke="#2563EB" strokeWidth="2.5" strokeDasharray="5 4" />
+        {/* Sample points along parabola */}
+        <circle cx="96" cy="108" r="4" fill="#0F172A" />
+        <SvgArrow x1={96} y1={108} x2={140} y2={108} color="#059669" strokeWidth={2} id="pa-vx1" />
+        <SvgArrow x1={96} y1={108} x2={96} y2={68} color="#D97706" strokeWidth={2} id="pa-vy1" />
+        <circle cx="180" cy="64" r="4.5" fill="#0F172A" />
+        <SvgArrow x1={180} y1={64} x2={224} y2={64} color="#059669" strokeWidth={2.5} id="pa-vx2" />
+        <text x="154" y="48" fontSize="10" fontWeight="700" fill="#059669">Apex: v_y = 0, v_x = const</text>
+        <circle cx="264" cy="108" r="4" fill="#0F172A" />
+        <SvgArrow x1={264} y1={108} x2={308} y2={108} color="#059669" strokeWidth={2} id="pa-vx3" />
+        <SvgArrow x1={264} y1={108} x2={264} y2={148} color="#DC2626" strokeWidth={2} id="pa-vy3" />
+        <text x="72" y="132" fontSize="10" fill="#D97706">v_y &gt; 0</text>
+        <text x="272" y="146" fontSize="10" fill="#DC2626">v_y &lt; 0</text>
+      </>
+    );
+  }
+
+  if (kind === 'projectile-parabola') {
+    const gy = h - 32;
+    return (
+      <>
+        <line x1="28" y1={gy} x2={w - 22} y2={gy} stroke="#475569" strokeWidth="2" />
+        <line x1="48" y1="22" x2="48" y2={gy} stroke="#94A3B8" strokeWidth="1.5" />
+        <path d={`M 48 ${gy} Q 176 20 306 ${gy}`} fill="none" stroke="#2563EB" strokeWidth="2.8" />
+        {/* Obstacle wall at x = 236 */}
+        <rect x="234" y="114" width="12" height={gy - 114} fill="#CBD5E1" stroke="#64748B" />
+        <circle cx="240" cy="92" r="4.5" fill="#059669" />
+        <line x1="48" y1="92" x2="240" y2="92" stroke="#94A3B8" strokeWidth="1.2" strokeDasharray="4 3" />
+        <text x="218" y="82" fontSize="10" fontWeight="700" fill="#059669">y(x)</text>
+        <text x="228" y={gy + 15} fontSize="10" fill="#475569">x</text>
+        <text x="76" y="44" fontSize="11" fontWeight="700" fill="#1D4ED8">y(x) = x tanθ₀ − gx²/(2v₀²cos²θ₀)</text>
+      </>
+    );
+  }
+
+  if (kind === 'projectile-range-height') {
+    const gy = h - 32;
+    return (
+      <>
+        <line x1="28" y1={gy} x2={w - 22} y2={gy} stroke="#475569" strokeWidth="2" />
+        {/* 60 deg high arc */}
+        <path d={`M 48 ${gy} Q 158 -24 268 ${gy}`} fill="none" stroke="#93C5FD" strokeWidth="2.2" strokeDasharray="5 3" />
+        {/* 30 deg low arc */}
+        <path d={`M 48 ${gy} Q 158 106 268 ${gy}`} fill="none" stroke="#2563EB" strokeWidth="2.5" />
+        {/* 45 deg max range */}
+        <path d={`M 48 ${gy} Q 182 32 316 ${gy}`} fill="none" stroke="#059669" strokeWidth="2.2" />
+        <line x1="158" y1="78" x2="158" y2={gy} stroke="#64748B" strokeWidth="1.2" strokeDasharray="3 3" />
+        <text x="164" y="96" fontSize="10" fontWeight="700" fill="#1E40AF">H_max</text>
+        <text x="252" y={gy + 16} fontSize="10" fontWeight="700" fill="#2563EB">R (30°, 60°)</text>
+        <text x="296" y={gy - 12} fontSize="10" fontWeight="700" fill="#059669">R_max (45°)</text>
+      </>
+    );
+  }
+
+  if (kind === 'circular-uniform' || kind === 'circular-nonuniform') {
+    const cx = 178;
+    const cy = 108;
+    const r = 68;
+    const px = cx + r * Math.cos(Math.PI / 5);
+    const py = cy - r * Math.sin(Math.PI / 5);
+    const isNonUniform = kind === 'circular-nonuniform';
+    return (
+      <>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#94A3B8" strokeWidth="2" strokeDasharray="5 4" />
+        <circle cx={cx} cy={cy} r="3.5" fill="#475569" />
+        <line x1={cx} y1={cy} x2={px} y2={py} stroke="#CBD5E1" strokeWidth="1.5" />
+        <circle cx={px} cy={py} r="5.5" fill="#2563EB" />
+        {/* Velocity tangent */}
+        <SvgArrow x1={px} y1={py} x2={px - 34} y2={py - 46} color="#059669" strokeWidth={2.5} id="cu-v" />
+        {/* Centripetal a_c inward */}
+        <SvgArrow x1={px} y1={py} x2={px - 44} y2={py + 32} color="#DC2626" strokeWidth={2.5} id="cu-ac" />
+        <text x={px - 28} y={py - 48} fontSize="11" fontWeight="700" fill="#059669">v</text>
+        <text x={px - 58} y={py + 44} fontSize="11" fontWeight="700" fill="#DC2626">a_c = v²/R</text>
+        {isNonUniform && (
+          <>
+            <SvgArrow x1={px} y1={py} x2={px - 22} y2={py - 30} color="#D97706" strokeWidth={2.5} id="cu-at" />
+            <SvgArrow x1={px} y1={py} x2={px - 66} y2={py + 2} color="#4F46E5" strokeWidth={3} id="cu-anet" />
+            <text x={px + 6} y={py - 20} fontSize="10" fontWeight="700" fill="#D97706">a_t</text>
+            <text x={px - 102} y={py + 4} fontSize="11" fontWeight="700" fill="#4F46E5">a = a_c + a_t</text>
+          </>
+        )}
+      </>
+    );
+  }
+
+  // relative-velocity-2d
+  return (
+    <>
+      <rect x="34" y="42" width={w - 68} height="122" fill="#EFF6FF" stroke="#93C5FD" strokeWidth="1.5" />
+      <line x1="34" y1="42" x2={w - 34} y2="42" stroke="#334155" strokeWidth="2.5" />
+      <line x1="34" y1="164" x2={w - 34} y2="164" stroke="#334155" strokeWidth="2.5" />
+      <SvgArrow x1={120} y1={146} x2={120} y2={66} color="#2563EB" strokeWidth={2.5} id="rv-bw" />
+      <SvgArrow x1={120} y1={66} x2={198} y2={66} color="#059669" strokeWidth={2.5} id="rv-wg" />
+      <SvgArrow x1={120} y1={146} x2={198} y2={66} color="#DC2626" strokeWidth={3} id="rv-bg" />
+      <text x="64" y="108" fontSize="11" fontWeight="700" fill="#2563EB">v_BW</text>
+      <text x="148" y="58" fontSize="11" fontWeight="700" fill="#059669">v_WG</text>
+      <text x="172" y="118" fontSize="11" fontWeight="700" fill="#DC2626">v_BG = v_BW + v_WG</text>
+    </>
+  );
+}
+
 export function TopicDiagramSvg({ spec }: TopicDiagramSvgProps) {
   const w = 360;
   const h = 210;
   const ox = 110;
   const oy = 148;
   const isKinematics = KINEMATICS_DIAGRAM_KINDS.has(spec.kind);
+  const isKinematics2D = KINEMATICS_2D_DIAGRAM_KINDS.has(spec.kind);
 
   return (
     <figure className="rounded-lg border border-slate-200 bg-white p-3">
@@ -418,6 +643,8 @@ export function TopicDiagramSvg({ spec }: TopicDiagramSvgProps) {
 
         {isKinematics ? (
           <KinematicsTopicSvgContent kind={spec.kind} w={w} h={h} />
+        ) : isKinematics2D ? (
+          <Kinematics2DTopicSvgContent kind={spec.kind} w={w} h={h} />
         ) : spec.kind === 'scalar-vs-vector' ? (
           <>
             <text x="24" y="34" fontSize="11" fontWeight="600" fill="#475569">
@@ -626,6 +853,45 @@ export function PracticeDiagramSvg({ diagram }: { diagram: NonNullable<PracticeQ
               <text x="168" y="126" fontSize="10" fill="#334155">3 s</text>
               <text x="256" y="106" fontSize="10" fill="#334155">5 s</text>
               <text x="10" y="24" fontSize="10" fontWeight="700" fill="#0F172A">a (m/s²)</text>
+            </>
+          )}
+          {diagram.kind === 'kin2d-projectile-flight' && (
+            <>
+              <line x1="26" y1="158" x2="294" y2="158" stroke="#64748B" strokeWidth="1.8" />
+              <path d="M 42 158 Q 160 22 278 158" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeDasharray="5 3" />
+              <SvgArrow x1={42} y1={158} x2={98} y2={116} color="#059669" strokeWidth={2.5} id="pq-proj-v0" />
+              <circle cx="160" cy="90" r="4.5" fill="#0F172A" />
+              <SvgArrow x1={160} y1={90} x2={208} y2={90} color="#059669" strokeWidth={2.5} id="pq-proj-vx" />
+              <text x="64" y="114" fontSize="10" fontWeight="700" fill="#059669">v₀ = 20 m/s</text>
+              <text x="66" y="150" fontSize="10" fill="#334155">37°</text>
+              <text x="140" y="76" fontSize="10" fontWeight="700" fill="#1D4ED8">Apex (v_y = 0)</text>
+            </>
+          )}
+          {diagram.kind === 'kin2d-circular-accel' && (
+            <>
+              <circle cx="160" cy="96" r="56" fill="none" stroke="#94A3B8" strokeWidth="2" strokeDasharray="4 4" />
+              <circle cx="160" cy="96" r="3" fill="#475569" />
+              <line x1="160" y1="96" x2="216" y2="96" stroke="#CBD5E1" strokeWidth="1.5" />
+              <circle cx="216" cy="96" r="5" fill="#2563EB" />
+              <SvgArrow x1={216} y1={96} x2={176} y2={96} color="#DC2626" strokeWidth={2.5} id="pq-circ-ac" />
+              <SvgArrow x1={216} y1={96} x2={216} y2={58} color="#D97706" strokeWidth={2.5} id="pq-circ-at" />
+              <SvgArrow x1={216} y1={96} x2={176} y2={58} color="#4F46E5" strokeWidth={3} id="pq-circ-a" />
+              <text x="166" y="112" fontSize="10" fontWeight="700" fill="#DC2626">a_c = 4</text>
+              <text x="224" y="76" fontSize="10" fontWeight="700" fill="#D97706">a_t = 3</text>
+              <text x="148" y="52" fontSize="10" fontWeight="700" fill="#4F46E5">|a| = ?</text>
+            </>
+          )}
+          {diagram.kind === 'kin2d-river-boat' && (
+            <>
+              <rect x="26" y="42" width="268" height="106" fill="#EFF6FF" stroke="#93C5FD" />
+              <line x1="26" y1="42" x2="294" y2="42" stroke="#334155" strokeWidth="2.5" />
+              <line x1="26" y1="148" x2="294" y2="148" stroke="#334155" strokeWidth="2.5" />
+              <SvgArrow x1={108} y1={142} x2={108} y2={58} color="#2563EB" strokeWidth={2.5} id="pq-rb-bw" />
+              <SvgArrow x1={108} y1={58} x2={164} y2={58} color="#059669" strokeWidth={2.5} id="pq-rb-wg" />
+              <SvgArrow x1={108} y1={142} x2={164} y2={58} color="#DC2626" strokeWidth={2.5} id="pq-rb-bg" />
+              <text x="48" y="102" fontSize="10" fontWeight="700" fill="#2563EB">5 m/s</text>
+              <text x="120" y="52" fontSize="10" fontWeight="700" fill="#059669">3 m/s</text>
+              <text x="218" y="100" fontSize="10" fill="#334155">W = 100 m</text>
             </>
           )}
         </svg>

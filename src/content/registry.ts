@@ -11,6 +11,8 @@ import { VECTORS_TOPICS } from './subjects/classicalMechanics/vectors/topics';
 import { VECTORS_EXERCISES } from './subjects/classicalMechanics/vectors/exercises';
 import { KINEMATICS_TOPICS } from './subjects/classicalMechanics/kinematics/topics';
 import { KINEMATICS_EXERCISES } from './subjects/classicalMechanics/kinematics/exercises';
+import { KINEMATICS_2D_TOPICS } from './subjects/classicalMechanics/kinematics2d/topics';
+import { KINEMATICS_2D_EXERCISES } from './subjects/classicalMechanics/kinematics2d/exercises';
 
 export const SUBJECTS: SubjectItem[] = [
   {
@@ -23,6 +25,7 @@ export const SUBJECTS: SubjectItem[] = [
     chapterIds: [
       'vectors',
       'kinematics',
+      'kinematics-2d',
       'dynamics',
       'work-energy',
       'momentum',
@@ -30,7 +33,13 @@ export const SUBJECTS: SubjectItem[] = [
       'gravitation',
       'oscillations',
     ],
-    resourceIds: ['cm-foundations-text', 'vector-lab-suite', 'kinematics-lab-suite', 'cm-problem-bank'],
+    resourceIds: [
+      'cm-foundations-text',
+      'vector-lab-suite',
+      'kinematics-lab-suite',
+      'kinematics2d-lab-suite',
+      'cm-problem-bank',
+    ],
     accentColor: '#2563EB',
   },
   {
@@ -88,7 +97,7 @@ export const LEARNING_RESOURCES: LearningResource[] = [
     type: 'Interactive Textbook',
     description:
       'A structured, intuition-first interactive textbook pairing geometric diagrams with live parameter labs and worked derivations.',
-    chapterIds: ['vectors', 'kinematics', 'dynamics', 'work-energy'],
+    chapterIds: ['vectors', 'kinematics', 'kinematics-2d', 'dynamics', 'work-energy'],
     status: 'available',
   },
   {
@@ -114,6 +123,17 @@ export const LEARNING_RESOURCES: LearningResource[] = [
     status: 'available',
   },
   {
+    id: 'kinematics2d-lab-suite',
+    subjectId: 'classical-mechanics',
+    title: '2D Kinematics, Projectile & Circular Lab',
+    authorOrSource: 'PhysicsKit Simulation Engine',
+    type: 'Simulation Suite',
+    description:
+      'Four interactive 2D motion labs covering planar r/v/a decomposition, projectile parabolas, circular acceleration, and river-boat relative velocity.',
+    chapterIds: ['kinematics-2d'],
+    status: 'available',
+  },
+  {
     id: 'cm-problem-bank',
     subjectId: 'classical-mechanics',
     title: 'Applied Mechanics Problem Companion',
@@ -121,7 +141,7 @@ export const LEARNING_RESOURCES: LearningResource[] = [
     type: 'Problem Bank',
     description:
       'Graded conceptual, numerical, and diagram exercises calibrated across Easy, Medium, and Hard difficulty tiers.',
-    chapterIds: ['vectors', 'kinematics'],
+    chapterIds: ['vectors', 'kinematics', 'kinematics-2d'],
     status: 'available',
   },
 ];
@@ -287,10 +307,87 @@ export const CHAPTERS: ChapterItem[] = [
     ],
   },
   {
-    id: 'dynamics',
+    id: 'kinematics-2d',
     subjectId: 'classical-mechanics',
     resourceId: 'cm-foundations-text',
     number: 3,
+    title: 'Two Dimensional Kinematics',
+    summary:
+      'Extend motion into a plane using position, displacement, tangent velocity, parallel/perpendicular acceleration, parabolic projectile flight, circular motion, and 2D relative velocity.',
+    estimatedMinutes: 115,
+    status: 'available',
+    learningObjectives: [
+      'Analyze curved planar motion by separating independent x(t) and y(t) equations sharing clock time t.',
+      'Connect chord displacement Δr and average velocity v_avg to tangent instantaneous velocity v(t) = dr/dt.',
+      'Decompose acceleration into speed-changing a_∥ and trajectory-curving a_⊥ components.',
+      'Derive and apply projectile trajectory y(x), flight time, peak height H_max, and horizontal range R.',
+      'Compute centripetal and tangential acceleration in uniform/non-uniform circular motion and transform velocities across frames.',
+    ],
+    keyEquations: [
+      {
+        label: 'Planar Position & Velocity',
+        latex: '\\vec{r}(t) = x(t)\\hat{i} + y(t)\\hat{j}, \\quad \\vec{v}(t) = \\frac{d\\vec{r}}{dt}',
+        meaning: 'Locates a particle in 2D and gives its tangent velocity vector.',
+      },
+      {
+        label: 'Acceleration Decomposition',
+        latex: '\\vec{a} = \\vec{a}_\\parallel + \\vec{a}_\\perp, \\quad a_\\parallel = \\frac{dv}{dt}, \\; a_\\perp = \\frac{v^2}{R_{\\text{curv}}}',
+        meaning: 'Separates speed-changing acceleration from direction-bending acceleration.',
+      },
+      {
+        label: 'Parabolic Projectile Path',
+        latex: 'y(x) = y_0 + (\\tan\\theta_0)x - \\frac{g x^2}{2v_0^2\\cos^2\\theta_0}',
+        meaning: 'Exact quadratic trajectory obtained by eliminating time t.',
+      },
+      {
+        label: 'Level-Ground Range & Peak Height',
+        latex: 'R = \\frac{v_0^2\\sin(2\\theta_0)}{g}, \\quad H_{\\max} = \\frac{v_0^2\\sin^2\\theta_0}{2g}',
+        meaning: 'Horizontal landing span and apex elevation over flat terrain.',
+      },
+      {
+        label: 'Circular Motion Acceleration',
+        latex: 'a_c = \\frac{v^2}{R}, \\quad |\\vec{a}| = \\sqrt{a_c^2 + a_t^2}',
+        meaning: 'Inward centripetal pull combined orthogonally with tangential speed change.',
+      },
+      {
+        label: '2D Relative Velocity',
+        latex: '\\vec{v}_{PA} = \\vec{v}_{PB} + \\vec{v}_{BA}',
+        meaning: 'Galilean velocity addition across moving 2D reference frames.',
+      },
+    ],
+    topicIds: KINEMATICS_2D_TOPICS.map((t) => t.id),
+    simulationIds: [
+      'kinematics2d-vectors',
+      'kinematics2d-projectile',
+      'kinematics2d-circular',
+      'kinematics2d-relative',
+    ],
+    modules: [
+      ...KINEMATICS_2D_TOPICS.map((t) => ({
+        id: `mod-${t.id}`,
+        kind: 'lesson' as const,
+        title: `${t.sectionNumber ?? `${t.order}.`} ${t.title}`,
+        refId: t.id,
+      })),
+      {
+        id: 'mod-kin2d-lab',
+        kind: 'simulation',
+        title: 'Interactive 2D Kinematics Lab',
+        refId: 'kinematics2d-projectile',
+      },
+      {
+        id: 'mod-kin2d-practice',
+        kind: 'exercise-set',
+        title: '2D Kinematics Practice & Quiz Set',
+        refId: 'kinematics-2d',
+      },
+    ],
+  },
+  {
+    id: 'dynamics',
+    subjectId: 'classical-mechanics',
+    resourceId: 'cm-foundations-text',
+    number: 4,
     title: 'Dynamics',
     summary: 'Newton’s Laws of Motion, free-body diagrams, friction, and tension systems.',
     estimatedMinutes: 120,
@@ -305,7 +402,7 @@ export const CHAPTERS: ChapterItem[] = [
     id: 'work-energy',
     subjectId: 'classical-mechanics',
     resourceId: 'cm-foundations-text',
-    number: 4,
+    number: 5,
     title: 'Work and Energy',
     summary: 'Work via dot products, kinetic & potential energy, and conservation laws.',
     estimatedMinutes: 95,
@@ -320,7 +417,7 @@ export const CHAPTERS: ChapterItem[] = [
     id: 'momentum',
     subjectId: 'classical-mechanics',
     resourceId: 'cm-foundations-text',
-    number: 5,
+    number: 6,
     title: 'Momentum',
     summary: 'Impulse, elastic and inelastic collisions, and center of mass.',
     estimatedMinutes: 85,
@@ -335,7 +432,7 @@ export const CHAPTERS: ChapterItem[] = [
     id: 'rotational-motion',
     subjectId: 'classical-mechanics',
     resourceId: 'cm-foundations-text',
-    number: 6,
+    number: 7,
     title: 'Rotational Motion',
     summary: 'Torque via cross products, moment of inertia, and angular momentum.',
     estimatedMinutes: 115,
@@ -350,7 +447,7 @@ export const CHAPTERS: ChapterItem[] = [
     id: 'gravitation',
     subjectId: 'classical-mechanics',
     resourceId: 'cm-foundations-text',
-    number: 7,
+    number: 8,
     title: 'Gravitation',
     summary: 'Universal gravitation, orbital mechanics, and Kepler’s laws.',
     estimatedMinutes: 90,
@@ -365,7 +462,7 @@ export const CHAPTERS: ChapterItem[] = [
     id: 'oscillations',
     subjectId: 'classical-mechanics',
     resourceId: 'cm-foundations-text',
-    number: 8,
+    number: 9,
     title: 'Oscillations',
     summary: 'Simple harmonic motion, pendulums, damping, and resonance.',
     estimatedMinutes: 95,
@@ -689,10 +786,130 @@ export const SIMULATIONS: SimulationConfig[] = [
       explanation: 'Negative velocity lobes subtract in ∫v(t)dt (displacement) but add positively in ∫|v(t)|dt (distance).',
     },
   },
+  {
+    id: 'kinematics2d-vectors',
+    chapterId: 'kinematics-2d',
+    title: '2D Position, Velocity & Acceleration Vectors',
+    shortTitle: '2D Vectors & a∥/a⊥',
+    summary:
+      'Trace a planar trajectory r(t), compare chord displacement Δr against tangent velocity v(t), and decompose a into parallel a∥ and normal a⊥.',
+    dimension: '2D',
+    learningObjectives: [
+      'See how v(t) = dr/dt always points tangent to the curved 2D path.',
+      'Separate acceleration into speed-changing a∥ and direction-turning a⊥.',
+    ],
+    relatedTopics: [
+      'Introduction to Two-Dimensional Motion',
+      'Position Vector in Two Dimensions',
+      'Displacement Vector in Two Dimensions',
+      'Instantaneous Velocity Vector',
+      'Average & Instantaneous Acceleration Vectors',
+    ],
+    keyEquationLatex:
+      '\\begin{aligned} \\vec{v}(t) &= \\frac{d\\vec{r}}{dt} \\\\ \\vec{a} &= \\vec{a}_\\parallel + \\vec{a}_\\perp \\end{aligned}',
+    quickCheck: {
+      prompt: 'When a_∥ is negative while a_⊥ is non-zero, what is the moving particle doing?',
+      options: [
+        'Speeding up in a straight line',
+        'Slowing down while curving along its trajectory',
+        'Moving at constant speed around a circle',
+        'Stationary at the origin',
+      ],
+      correctIndex: 1,
+      explanation: 'Negative a_∥ opposes velocity v so speed drops, while non-zero a_⊥ bends the path.',
+    },
+  },
+  {
+    id: 'kinematics2d-projectile',
+    chapterId: 'kinematics-2d',
+    title: 'Projectile Motion & Parabolic Trajectory Lab',
+    shortTitle: 'Projectile Motion',
+    summary:
+      'Launch projectiles from ground or elevated cliffs, inspect live vx and vy components, and compare complementary launch angles.',
+    dimension: '2D',
+    learningObjectives: [
+      'Verify that vx stays constant throughout flight while vy changes at −g.',
+      'Observe complementary angles (θ₀ and 90° − θ₀) matching horizontal range R on level ground.',
+    ],
+    relatedTopics: [
+      'Projectile Motion: Equations & Independence of Axes',
+      'Parabolic Trajectory Equation',
+      'Time of Flight, Maximum Height & Horizontal Range',
+    ],
+    keyEquationLatex:
+      '\\begin{aligned} x(t) &= (v_0\\cos\\theta_0)t \\\\ y(t) &= y_0 + v_{0y}t - \\tfrac{1}{2}gt^2 \\end{aligned}',
+    quickCheck: {
+      prompt: 'With y₀ = 0, launching at 30° vs. 60° at the same speed v₀ gives:',
+      options: [
+        'Greater range at 30°',
+        'Greater range at 60°',
+        'Identical horizontal range R, with higher H_max at 60°',
+        'Identical flight time',
+      ],
+      correctIndex: 2,
+      explanation: 'Complementary angles share sin(2θ₀), producing equal range R, while 60° has larger vertical velocity.',
+    },
+  },
+  {
+    id: 'kinematics2d-circular',
+    chapterId: 'kinematics-2d',
+    title: 'Uniform & Non-Uniform Circular Motion',
+    shortTitle: 'Circular Motion',
+    summary:
+      'Explore radial centripetal acceleration a_c = v²/R and tangential acceleration a_t combining into net acceleration a = a_c + a_t.',
+    dimension: '2D',
+    learningObjectives: [
+      'Visualize inward centripetal acceleration perpendicular to tangent velocity v.',
+      'Add tangential acceleration a_t to see how net acceleration tilts ahead or behind the radius.',
+    ],
+    relatedTopics: [
+      'Uniform Circular Motion & Centripetal Acceleration',
+      'Non-Uniform Circular Motion',
+    ],
+    keyEquationLatex:
+      '\\begin{aligned} a_c &= \\frac{v^2}{R} \\\\ |\\vec{a}| &= \\sqrt{a_c^2 + a_t^2} \\end{aligned}',
+    quickCheck: {
+      prompt: 'If a particle moves on a circle at constant speed (a_t = 0) and you double its speed v, centripetal acceleration a_c:',
+      options: ['Doubles', 'Quadruples', 'Halves', 'Stays the same'],
+      correctIndex: 1,
+      explanation: 'Because a_c = v²/R depends on the square of speed, doubling v increases a_c by 2² = 4.',
+    },
+  },
+  {
+    id: 'kinematics2d-relative',
+    chapterId: 'kinematics-2d',
+    title: '2D Relative Velocity & River Crossing Lab',
+    shortTitle: 'Relative Velocity',
+    summary:
+      'Steer a boat across a flowing river to observe v_BG = v_BW + v_WG, crossing time independence, and exact upstream zero-drift steering.',
+    dimension: '2D',
+    learningObjectives: [
+      'Construct the Galilean velocity addition triangle v_BG = v_BW + v_WG.',
+      'Find the upstream steering angle α* = arcsin(v_WG / v_BW) that eliminates downstream drift.',
+    ],
+    relatedTopics: ['Relative Velocity in Two Dimensions'],
+    keyEquationLatex:
+      '\\begin{aligned} \\vec{v}_{BG} &= \\vec{v}_{BW} + \\vec{v}_{WG} \\\\ t_{\\text{cross}} &= \\frac{W}{v_{BW}\\cos\\alpha} \\end{aligned}',
+    quickCheck: {
+      prompt: 'Which steering angle crosses a river in the shortest possible time?',
+      options: [
+        'Aiming straight across (α = 0°)',
+        'Aiming at the zero-drift angle α*',
+        'Aiming 45° upstream',
+        'Aiming 45° downstream',
+      ],
+      correctIndex: 0,
+      explanation: 'Aiming straight across (α = 0°) maximizes the cross-river component v_BW cos α = v_BW, minimizing W / v_BW.',
+    },
+  },
 ];
 
-export const TOPICS: TopicItem[] = [...VECTORS_TOPICS, ...KINEMATICS_TOPICS];
-export const PRACTICE_QUESTIONS: PracticeQuestion[] = [...VECTORS_EXERCISES, ...KINEMATICS_EXERCISES];
+export const TOPICS: TopicItem[] = [...VECTORS_TOPICS, ...KINEMATICS_TOPICS, ...KINEMATICS_2D_TOPICS];
+export const PRACTICE_QUESTIONS: PracticeQuestion[] = [
+  ...VECTORS_EXERCISES,
+  ...KINEMATICS_EXERCISES,
+  ...KINEMATICS_2D_EXERCISES,
+];
 
 export function getSubjectById(id: string): SubjectItem | undefined {
   return SUBJECTS.find((s) => s.id === id);

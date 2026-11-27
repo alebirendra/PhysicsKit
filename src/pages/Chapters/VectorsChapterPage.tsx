@@ -44,7 +44,12 @@ export function VectorsChapterPage({
   const chapter = getChapterById(chapterId) ?? getChapterById('vectors')!;
   const topics = getTopicsForChapter(chapter.id);
   const chapterSims = SIMULATIONS.filter((s) => chapter.simulationIds.includes(s.id));
-  const labName = chapter.id === 'kinematics' ? '1D Kinematics Lab' : 'Vector Lab';
+  const labName =
+    chapter.id === 'kinematics'
+      ? '1D Kinematics Lab'
+      : chapter.id === 'kinematics-2d'
+        ? '2D Kinematics Lab'
+        : 'Vector Lab';
   const defaultSimId: SimulationId = chapter.simulationIds[0] ?? 'representation';
 
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(initialTopicId ?? null);
